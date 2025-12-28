@@ -4,6 +4,8 @@ import MainTabs from './MainTabs';
 import ClaimScreen from '@/screens/ClaimScreen';
 
 import QuestDetailScreen from '@/screens/QuestDetailScreen';
+import LaunchScreen from '@/screens/LaunchScreen';
+import LeaderboardScreen from '@/screens/LeaderboardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -12,6 +14,8 @@ export default function AppNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={MainTabs} />
       <Stack.Screen name="QuestDetail" component={QuestDetailScreen} />
+      <Stack.Screen name="Launch" component={LaunchScreen} />
+      <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
       <Stack.Screen
         name="Claim"
         component={ClaimScreen}

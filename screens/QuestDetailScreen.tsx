@@ -7,7 +7,9 @@ import {
     TouchableOpacity,
     Dimensions,
     SafeAreaView,
+    Image,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 
@@ -78,6 +80,40 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
                                 <Text style={styles.distanceText}>{quest.distance} from your current location</Text>
                             </View>
                         </View>
+
+                        <View style={styles.mapContainer}>
+                            <MapView
+                                provider={PROVIDER_GOOGLE}
+                                style={styles.map}
+                                initialRegion={{
+                                    latitude: quest.coordinate?.latitude || 37.78825,
+                                    longitude: quest.coordinate?.longitude || -122.4324,
+                                    latitudeDelta: 0.005,
+                                    longitudeDelta: 0.005,
+                                }}
+                                scrollEnabled={false}
+                                zoomEnabled={false}
+                                customMapStyle={[
+                                    { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+                                    { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+                                    { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+                                    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+                                ]}
+                            >
+                                <Marker
+                                    coordinate={{
+                                        latitude: quest.coordinate?.latitude || 37.78825,
+                                        longitude: quest.coordinate?.longitude || -122.4324,
+                                    }}
+                                >
+                                    <Image
+                                        source={require('@/assets/images/treasure_chest.png')}
+                                        style={{ width: 40, height: 40 }}
+                                        resizeMode="contain"
+                                    />
+                                </Marker>
+                            </MapView>
+                        </View>
                     </View>
 
                     <TouchableOpacity style={styles.startButton}>
@@ -90,7 +126,7 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
                     </TouchableOpacity>
                 </ScrollView>
             </SafeAreaView>
-        </View>
+        </View >
     );
 }
 
@@ -179,6 +215,18 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Theme.colors.border,
         gap: Theme.spacing.md,
+        marginBottom: Theme.spacing.md,
+    },
+    mapContainer: {
+        height: 150,
+        borderRadius: Theme.borderRadius.md,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: Theme.colors.border,
+    },
+    map: {
+        width: '100%',
+        height: '100%',
     },
     locationIcon: {
         fontSize: 24,

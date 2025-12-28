@@ -39,6 +39,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       distance: '0.5 km',
       rarity: 'rare' as const,
       expiresAt: '2h left',
+      coordinate: { latitude: 37.78825, longitude: -122.4324 },
     },
     {
       id: '2',
@@ -48,6 +49,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       distance: '1.2 km',
       rarity: 'epic' as const,
       expiresAt: '5h left',
+      coordinate: { latitude: 37.79025, longitude: -122.4344 },
     },
     {
       id: '3',
@@ -57,6 +59,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       distance: '2.1 km',
       rarity: 'common' as const,
       expiresAt: '1d left',
+      coordinate: { latitude: 37.78625, longitude: -122.4304 },
     },
   ];
 
@@ -137,7 +140,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
         {/* Quest Fast Finish Leaderboard */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Fastest Finishers</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Fastest Finishers</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Leaderboard')}>
+              <Text style={styles.seeAll}>See all</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.leaderboardContainer}>
             {[
               { id: '1', name: 'CryptoKnight', time: '12m 30s', rank: 1, avatar: '🥇' },
@@ -294,7 +302,7 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
   },
   stats: {
@@ -311,7 +319,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.primary,
     marginBottom: 4,
   },
@@ -331,7 +339,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: Theme.spacing.md,
   },
@@ -387,7 +395,7 @@ const styles = StyleSheet.create({
   },
   checkInTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: 4,
   },
@@ -420,7 +428,7 @@ const styles = StyleSheet.create({
   },
   rarityText: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.semiBold,
     color: Theme.colors.text,
   },
   questExpiry: {
@@ -429,7 +437,7 @@ const styles = StyleSheet.create({
   },
   questName: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: Theme.spacing.lg,
   },
@@ -445,7 +453,7 @@ const styles = StyleSheet.create({
   },
   rewardValue: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.primary,
   },
   distanceContainer: {
@@ -479,7 +487,7 @@ const styles = StyleSheet.create({
   },
   spinTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: 4,
   },
@@ -510,7 +518,7 @@ const styles = StyleSheet.create({
   },
   featuredTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
     color: Theme.colors.text,
     marginBottom: 4,
   },
@@ -520,7 +528,7 @@ const styles = StyleSheet.create({
   },
   featuredReward: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.semiBold,
     color: Theme.colors.primary,
   },
 });

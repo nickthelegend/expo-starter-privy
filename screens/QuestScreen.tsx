@@ -22,6 +22,7 @@ const mockQuests = [
         rarity: 'rare',
         description: 'Explore the heart of the city and discover hidden gems.',
         location: 'Central Plaza, Downtown',
+        coordinate: { latitude: 37.78825, longitude: -122.4324 },
     },
     {
         id: '2',
@@ -32,6 +33,7 @@ const mockQuests = [
         rarity: 'epic',
         description: 'A mysterious signal has been detected. Investigate the location to claim a rare artifact.',
         location: 'Old Lighthouse, Shoreline',
+        coordinate: { latitude: 37.79025, longitude: -122.4344 },
     },
     {
         id: '3',
@@ -42,6 +44,7 @@ const mockQuests = [
         rarity: 'common',
         description: 'Help the local community by completing simple tasks.',
         location: 'Community Center, Eastside',
+        coordinate: { latitude: 37.78625, longitude: -122.4304 },
     },
 ];
 
@@ -69,7 +72,7 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
                     {/* Launch Quest Hero */}
                     <TouchableOpacity
                         style={styles.launchHero}
-                        onPress={() => navigation.navigate('Scan')}
+                        onPress={() => navigation.navigate('Launch')}
                     >
                         <LinearGradient
                             colors={Theme.gradients.primary as any}
@@ -212,7 +215,7 @@ const styles = StyleSheet.create({
     },
     rarityText: {
         fontSize: 10,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.semiBold,
         color: Theme.colors.text,
     },
     questName: {
@@ -233,7 +236,7 @@ const styles = StyleSheet.create({
     },
     rewardValue: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.primary,
     },
     distanceBadge: {
