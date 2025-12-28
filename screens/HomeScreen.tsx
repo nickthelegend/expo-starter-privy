@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Animated,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
@@ -83,11 +84,33 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.username} data-testid="user-greeting">
-              {user?.id ? 'Explorer' : 'Guest'}
-            </Text>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.greeting}>Welcome back,</Text>
+              <Text style={styles.username} data-testid="user-greeting">
+                {user?.id ? 'Explorer' : 'Guest'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <LinearGradient
+                colors={Theme.gradients.primary as any}
+                style={styles.avatarBorder}
+              >
+                <View style={styles.avatarInner}>
+                  {(user as any)?.linked_accounts?.[0]?.picture ? (
+                    <Image
+                      source={{ uri: (user as any).linked_accounts[0].picture }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <Text style={styles.avatarEmoji}>👤</Text>
+                  )}
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
           <View style={styles.stats}>
             <View style={styles.statItem}>
@@ -115,7 +138,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             data-testid="daily-checkin-button"
           >
             <LinearGradient
-              colors={dailyCheckInCompleted ? ['#1E1E1E', '#1E1E1E'] : Theme.gradients.primary}
+              colors={dailyCheckInCompleted ? ['#1E1E1E', '#1E1E1E'] as any : Theme.gradients.primary as any}
               style={styles.checkInGradient}
             >
               <Text style={styles.checkInIcon}>
@@ -208,6 +231,37 @@ const styles = StyleSheet.create({
     padding: Theme.spacing.lg,
     paddingTop: 60,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  profileButton: {
+    borderRadius: 25,
+    ...Theme.shadows.glow,
+  },
+  avatarBorder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    padding: 2,
+  },
+  avatarInner: {
+    flex: 1,
+    backgroundColor: Theme.colors.surface,
+    borderRadius: 23,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarEmoji: {
+    fontSize: 24,
+  },
   greeting: {
     fontSize: 16,
     color: Theme.colors.textMuted,
@@ -217,7 +271,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: Theme.colors.text,
-    marginBottom: 20,
   },
   stats: {
     flexDirection: 'row',
