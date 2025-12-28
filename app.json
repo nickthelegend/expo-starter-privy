@@ -35,7 +35,11 @@
     "extra": {
       "privyAppId": "cmc75u6a501xajs0mpi4fxpd5",
       "privyClientId": "client-WY6MsvRRyr54eVC4P8czjAY6dMRgdFd324DFwPMs56XfP",
-      "passkeyAssociatedDomain": "https://dev.privy.example"
+      "passkeyAssociatedDomain": "https://dev.privy.example",
+      "supabaseUrl": "https://phidvdsfmtetcsqwmfnv.supabase.co",
+      "supabaseKey": "sb_publishable_3txPu7Wjj_vlawCZEUyV8Q_Cg8W7fOA",
+      "backendUrl": "https://spin-rewards-21.preview.emergentagent.com",
+      "googleMapsApiKey": "AIzaSyACn5LbHpFrDZrJ9pkg1OLc4EkntvcmNsA"
     },
     "plugins": [
       "expo-router",
