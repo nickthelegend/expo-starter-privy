@@ -30,7 +30,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "dev.privy.example"
+      "package": "dev.privy.example",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyACn5LbHpFrDZrJ9pkg1OLc4EkntvcmNsA"
+        }
+      }
     },
     "extra": {
       "privyAppId": "cmc75u6a501xajs0mpi4fxpd5",
