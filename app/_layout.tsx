@@ -12,6 +12,9 @@ import { useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { mantleSepolia } from "@/constants/Chains";
 
+
+import { base, mainnet, optimism, arbitrum, polygon, mantleSepoliaTestnet } from "viem/chains";
+
 export default function RootLayout() {
   const { loadStoredData } = useAppStore();
 
@@ -29,11 +32,19 @@ export default function RootLayout() {
     <PrivyProvider
       appId={Constants.expoConfig?.extra?.privyAppId}
       clientId={Constants.expoConfig?.extra?.privyClientId}
-      supportedChains={[mantleSepolia]}
+      supportedChains={[
+        base,
+        mainnet,
+        optimism,
+        arbitrum,
+        polygon,
+        mantleSepoliaTestnet,
+      ]}
       config={{
+
         embedded: {
           ethereum: {
-            createOnLogin: 'users-without-wallets',
+            createOnLogin: 'all-users',
           },
         },
       }}

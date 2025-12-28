@@ -16,6 +16,7 @@ import UnlinkAccounts from "./userManagement/UnlinkAccounts";
 import Wallets from "./userManagement/Wallets";
 import SolanaWalletActions from "./walletActions/SolanaWalletActions";
 import EVMWalletActions from "./walletActions/EVMWalletActions";
+import { base, mainnet, optimism, arbitrum, polygon, mantleSepoliaTestnet } from "viem/chains";
 
 const toMainIdentifier = (x: PrivyUser["linked_accounts"][number]) => {
   if (x.type === "phone") {
@@ -130,18 +131,30 @@ export const UserScreen = () => {
             )}
 
             <>
-              <Text>Chain ID to set to:</Text>
-              <TextInput
-                value={chainId}
-                onChangeText={setChainId}
-                placeholder="Chain Id"
-              />
-              <Button
-                title="Switch Chain"
-                onPress={async () =>
-                  switchChain(await wallets[0].getProvider(), chainId)
-                }
-              />
+              <Text style={{ marginTop: 20, fontWeight: "bold" }}>
+                Switch Chain
+              </Text>
+              <View style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {[
+                  base,
+                  mainnet,
+                  optimism,
+                  arbitrum,
+                  polygon,
+                  mantleSepoliaTestnet,
+                ].map((chain) => (
+                  <Button
+                    key={chain.id}
+                    title={`Switch to ${chain.name}`}
+                    onPress={async () =>
+                      switchChain(
+                        await wallets[0].getProvider(),
+                        `0x${chain.id.toString(16)}`
+                      )
+                    }
+                  />
+                ))}
+              </View>
             </>
           </View>
 
