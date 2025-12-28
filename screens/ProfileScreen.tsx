@@ -17,7 +17,10 @@ interface ProfileScreenProps {
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { user, logout } = usePrivy();
-  const wallet = getUserEmbeddedEthereumWallet(user);
+  const embeddedWallet = getUserEmbeddedEthereumWallet(user);
+  const externalWallet = user?.wallet;
+  const wallet = embeddedWallet || externalWallet;
+  const walletType = embeddedWallet ? 'Embedded Wallet' : 'External Wallet';
 
   const handleLogout = () => {
     Alert.alert(
@@ -75,7 +78,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               data-testid="wallet-address-card"
             >
               <View style={styles.walletHeader}>
-                <Text style={styles.walletLabel}>Ethereum Sepolia</Text>
+                <Text style={styles.walletLabel}>{walletType}</Text>
                 <View style={styles.networkBadge}>
                   <View style={styles.networkDot} />
                   <Text style={styles.networkText}>Connected</Text>
@@ -112,7 +115,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         {/* Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Settings</Text>
-          
+
           <TouchableOpacity
             style={styles.settingItem}
             data-testid="notifications-setting"

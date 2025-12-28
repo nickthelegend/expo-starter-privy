@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { useAppStore } from '@/store/useAppStore';
 import { usePrivy } from '@privy-io/expo';
+import AutoCarousel from '@/components/AutoCarousel';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.85;
@@ -138,60 +139,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               <Text style={styles.seeAll}>See all</Text>
             </TouchableOpacity>
           </View>
-          
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={CARD_WIDTH + 16}
-            decelerationRate="fast"
-            contentContainerStyle={styles.carousel}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
-            )}
-            data-testid="quests-carousel"
-          >
-            {mockQuests.map((quest, index) => (
-              <TouchableOpacity
-                key={quest.id}
-                style={styles.questCard}
-                onPress={() => navigation.navigate('Scan')}
-                data-testid={`quest-card-${quest.id}`}
-              >
-                <View style={[styles.questCard, { width: CARD_WIDTH }]}>
-                  <View style={styles.questHeader}>
-                    <View
-                      style={[
-                        styles.rarityBadge,
-                        { backgroundColor: getRarityColor(quest.rarity) },
-                      ]}
-                    >
-                      <Text style={styles.rarityText}>{quest.rarity.toUpperCase()}</Text>
-                    </View>
-                    <Text style={styles.questExpiry}>{quest.expiresAt}</Text>
-                  </View>
-                  
-                  <Text style={styles.questName}>{quest.name}</Text>
-                  
-                  <View style={styles.questFooter}>
-                    <View>
-                      <Text style={styles.rewardLabel}>Reward</Text>
-                      <Text style={styles.rewardValue}>{quest.reward}</Text>
-                    </View>
-                    <View style={styles.distanceContainer}>
-                      <Text style={styles.distance}>📍 {quest.distance}</Text>
-                    </View>
-                  </View>
-                  
-                  <LinearGradient
-                    colors={['transparent', 'rgba(98, 65, 232, 0.1)']}  
-                    style={styles.questGradient}
-                  />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+
+          <AutoCarousel data={mockQuests} />
         </View>
 
         {/* Spin to Earn */}
@@ -199,7 +148,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <Text style={styles.sectionTitle}>Spin to Earn</Text>
           <TouchableOpacity
             style={styles.spinCard}
-            onPress={() => {/* TODO: Implement spin wheel */}}
+            onPress={() => navigation.navigate('spin/spin')}
             data-testid="spin-to-earn-button"
           >
             <LinearGradient
@@ -229,7 +178,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </View>
               <Text style={styles.featuredReward}>500 KYRA</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.featuredCard} data-testid="featured-drop-2">
               <View style={styles.featuredContent}>
                 <Text style={styles.featuredIcon}>🌟</Text>
