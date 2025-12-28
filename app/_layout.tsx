@@ -10,10 +10,11 @@ import {
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
+import { mantleSepolia } from "@/constants/Chains";
 
 export default function RootLayout() {
   const { loadStoredData } = useAppStore();
-  
+
   useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -28,6 +29,14 @@ export default function RootLayout() {
     <PrivyProvider
       appId={Constants.expoConfig?.extra?.privyAppId}
       clientId={Constants.expoConfig?.extra?.privyClientId}
+      supportedChains={[mantleSepolia]}
+      config={{
+        embedded: {
+          ethereum: {
+            createOnLogin: 'users-without-wallets',
+          },
+        },
+      }}
     >
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
