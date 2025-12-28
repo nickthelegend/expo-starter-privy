@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: Theme.spacing.lg,
   },
@@ -234,12 +234,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
   },
   statLabel: {
     fontSize: 10,
     color: 'rgba(255,255,255,0.7)',
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   filtersContainer: {
     paddingHorizontal: Theme.spacing.lg,
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
   filterText: {
     color: Theme.colors.textMuted,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   filterTextActive: {
     color: Theme.colors.text,
@@ -309,13 +310,13 @@ const styles = StyleSheet.create({
   itemName: {
     color: Theme.colors.text,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: Theme.typography.fontFamily.semiBold,
     marginBottom: 2,
   },
   itemAmount: {
     color: Theme.colors.primary,
     fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.semiBold,
     marginBottom: Theme.spacing.xs,
   },
   itemType: {
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
   },
   itemTypeText: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   emptyState: {
     alignItems: 'center',
@@ -340,7 +341,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: Theme.spacing.sm,
   },
@@ -348,5 +349,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Theme.colors.textMuted,
     textAlign: 'center',
+    fontFamily: Theme.typography.fontFamily.regular,
   },
 });

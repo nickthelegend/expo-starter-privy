@@ -351,17 +351,17 @@ const styles = StyleSheet.create({
   leaderboardName: {
     color: Theme.colors.text,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   leaderboardTime: {
     color: Theme.colors.primary,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.mono,
   },
   seeAll: {
     fontSize: 14,
     color: Theme.colors.primary,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   checkInCard: {
     borderRadius: Theme.borderRadius.lg,

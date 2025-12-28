@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 40,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
   },
   onlineBadge: {
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 26,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: 8,
   },
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   verificationText: {
     color: '#60A5FA',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   trustBadgeSmall: {
     backgroundColor: 'rgba(245, 158, 11, 0.2)',
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   trustTextSmall: {
     color: '#FBBF24',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   statsRow: {
     flexDirection: 'row',
@@ -354,13 +354,14 @@ const styles = StyleSheet.create({
   },
   miniStatValue: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
   },
   miniStatLabel: {
     fontSize: 12,
     color: Theme.colors.textMuted,
     marginTop: 4,
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   section: {
     paddingHorizontal: Theme.spacing.lg,
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: Theme.spacing.md,
     opacity: 0.8,
@@ -406,12 +407,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Theme.colors.textMuted,
     marginBottom: 2,
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   walletAddressText: {
     fontSize: 16,
-    fontWeight: '600',
     color: Theme.colors.text,
-    fontFamily: 'monospace',
+    fontFamily: Theme.typography.fontFamily.mono,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -436,11 +437,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#10B981',
     fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   tapToCopy: {
     fontSize: 12,
     color: Theme.colors.textMuted,
     fontStyle: 'italic',
+    fontFamily: Theme.typography.fontFamily.regular,
   },
   networkScroll: {
     marginHorizontal: -Theme.spacing.lg,

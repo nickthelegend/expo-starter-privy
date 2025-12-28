@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 32,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.text,
         marginBottom: Theme.spacing.lg,
     },
@@ -163,13 +163,14 @@ const styles = StyleSheet.create({
     },
     launchTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.text,
         marginBottom: 4,
     },
     launchSubtitle: {
         fontSize: 14,
         color: 'rgba(255,255,255,0.7)',
+        fontFamily: Theme.typography.fontFamily.medium,
     },
     launchButtonInner: {
         width: 50,
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
     },
     sectionSubtitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontFamily: Theme.typography.fontFamily.semiBold,
         color: Theme.colors.textMuted,
     },
     questList: {
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     },
     questName: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.text,
         marginBottom: Theme.spacing.md,
     },

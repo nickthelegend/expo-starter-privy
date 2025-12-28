@@ -11,6 +11,24 @@ export const Theme = {
     warning: '#F59E0B',
     error: '#EF4444',
   },
+  typography: {
+    fontFamily: {
+      regular: 'Inter_400Regular',
+      medium: 'Inter_500Medium',
+      semiBold: 'Inter_600SemiBold',
+      header: 'SpaceGrotesk_700Bold',
+      mono: 'SpaceGrotesk_500Medium',
+    },
+    fontSize: {
+      xs: 12,
+      sm: 14,
+      md: 16,
+      lg: 20,
+      xl: 24,
+      xxl: 32,
+      hero: 40,
+    },
+  },
   gradients: {
     primary: ['#6241E8', '#795CEB'],
     dark: ['#000000', '#181121'],
