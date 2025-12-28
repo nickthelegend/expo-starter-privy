@@ -46,6 +46,12 @@
       "expo-secure-store",
       "expo-apple-authentication",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow KyraQuest to access your camera to scan QR codes"
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "ios": {
