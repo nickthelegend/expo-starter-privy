@@ -1,44 +1,92 @@
-import { SafeAreaView, Text, View } from "react-native";
+import { SafeAreaView, Text, View, ActivityIndicator } from "react-native";
+import React, { useState, useEffect } from "react";
 import Constants from "expo-constants";
 import LoginScreen from "@/components/LoginScreen";
 import { usePrivy } from "@privy-io/expo";
-import { UserScreen } from "@/components/UserScreen";
+import { Theme } from "@/constants/Theme";
+import { useAppStore } from "@/store/useAppStore";
+import OnboardingScreen from "@/screens/OnboardingScreen";
+import AppNavigator from "@/navigation/AppNavigator";
 
 export default function Index() {
-  const { user } = usePrivy();
+  const { user, isReady } = usePrivy();
+  const { hasCompletedOnboarding, loadStoredData } = useAppStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      await loadStoredData();
+      setLoading(false);
+    };
+    init();
+  }, []);
+
   if ((Constants.expoConfig?.extra?.privyAppId as string).length !== 25) {
     return (
-      <SafeAreaView>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Theme.colors.background }}>
         <View
           style={{
-            display: "flex",
+            flex: 1,
             alignItems: "center",
             justifyContent: "center",
+            padding: 20,
           }}
         >
-          <Text>You have not set a valid `privyAppId` in app.json</Text>
+          <Text style={{ color: Theme.colors.text, textAlign: 'center' }}>
+            You have not set a valid `privyAppId` in app.json
+          </Text>
         </View>
       </SafeAreaView>
     );
   }
+
   if (
-    !(Constants.expoConfig?.extra?.privyClientId as string).startsWith(
-      "client-"
-    )
+    !(Constants.expoConfig?.extra?.privyClientId as string).startsWith("client-")
   ) {
     return (
-      <SafeAreaView>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Theme.colors.background }}>
         <View
           style={{
-            display: "flex",
+            flex: 1,
             alignItems: "center",
             justifyContent: "center",
+            padding: 20,
           }}
         >
-          <Text>You have not set a valid `privyClientId` in app.json</Text>
+          <Text style={{ color: Theme.colors.text, textAlign: 'center' }}>
+            You have not set a valid `privyClientId` in app.json
+          </Text>
         </View>
       </SafeAreaView>
     );
   }
-  return !user ? <LoginScreen /> : <UserScreen />;
+
+  if (loading || !isReady) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: Theme.colors.background }}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show onboarding if not completed
+  if (!hasCompletedOnboarding) {
+    return <OnboardingScreen onComplete={() => {}} />;
+  }
+
+  // Show login if no user
+  if (!user) {
+    return <LoginScreen />;
+  }
+
+  // Show main app
+  return <AppNavigator />;
 }
