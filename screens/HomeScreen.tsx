@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { Theme } from '@/constants/Theme';
 import { useAppStore } from '@/store/useAppStore';
 import { usePrivy } from '@privy-io/expo';
 import AutoCarousel from '@/components/AutoCarousel';
+import ClaimModal from '@/components/ClaimModal';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.85;
@@ -26,6 +27,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { user } = usePrivy();
   const { quests, userStats, dailyCheckInCompleted, completeDailyCheckIn } = useAppStore();
   const scrollX = useRef(new Animated.Value(0)).current;
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [earnedReward, setEarnedReward] = useState<{ type: 'XP' | 'TOKEN' | 'NFT', amount?: number, name: string }>({ type: 'XP', amount: 10, name: 'Daily Check-in' });
 
   const mockQuests = [
     {
@@ -59,6 +62,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const handleCheckIn = () => {
     completeDailyCheckIn();
+    setEarnedReward({ type: 'XP', amount: 10, name: 'Daily Check-in Reward' });
+    setShowClaimModal(true);
   };
 
   const getRarityColor = (rarity: string) => {
@@ -225,6 +230,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </View>
         </View>
       </ScrollView>
+      <ClaimModal
+        visible={showClaimModal}
+        onClose={() => setShowClaimModal(false)}
+        reward={earnedReward}
+      />
     </View>
   );
 }

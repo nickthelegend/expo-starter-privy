@@ -53,17 +53,17 @@ export default function ScanScreen({ navigation }: ScanScreenProps) {
 
   const handleBarCodeScanned = async ({ type, data }: any) => {
     if (scanned) return;
-    
+
     setScanned(true);
     setLoading(true);
 
     try {
       // Mock QR verification for now
       // const result = await verifyQRCode(data);
-      
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       setLoading(false);
       navigation.navigate('Claim', {
         questId: data,
@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: Theme.spacing.lg,
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   loadingContainer: {
     alignItems: 'center',
@@ -200,6 +201,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.textMuted,
     fontSize: 14,
     marginTop: Theme.spacing.sm,
+    fontFamily: Theme.typography.fontFamily.regular,
   },
   cancelButton: {
     paddingHorizontal: Theme.spacing.xl,
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: Theme.colors.textMuted,
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   permissionContainer: {
     flex: 1,
@@ -225,6 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginBottom: Theme.spacing.xl,
+    fontFamily: Theme.typography.fontFamily.regular,
   },
   permissionButton: {
     width: '100%',
@@ -238,6 +241,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Theme.colors.text,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
 });

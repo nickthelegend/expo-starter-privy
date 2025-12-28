@@ -93,7 +93,7 @@ export default function MapScreen({ navigation }: MapScreenProps) {
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
             </View>
-            
+
             <View
               style={[
                 styles.rarityBadge,
@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: Theme.colors.text,
+    fontFamily: Theme.typography.fontFamily.header,
   },
   closeButton: {
     width: 32,
@@ -204,6 +205,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: Theme.colors.text,
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   scanButton: {
     borderRadius: Theme.borderRadius.md,
@@ -217,5 +219,6 @@ const styles = StyleSheet.create({
     color: Theme.colors.text,
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.header,
   },
 });

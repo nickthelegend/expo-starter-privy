@@ -70,8 +70,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         style={StyleSheet.absoluteFillObject}
       />
 
-      <TouchableOpacity 
-        style={styles.skipButton} 
+      <TouchableOpacity
+        style={styles.skipButton}
         onPress={handleSkip}
         data-testid="onboarding-skip-button"
       >
@@ -94,7 +94,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
                 <Text style={styles.icon}>{slide.icon}</Text>
               </LinearGradient>
             </View>
-            
+
             <Text style={styles.title}>{slide.title}</Text>
             <Text style={styles.description}>{slide.description}</Text>
           </View>
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.textMuted,
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   pager: {
     flex: 1,
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     textAlign: 'center',
     marginBottom: 16,
@@ -197,6 +198,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.textMuted,
     textAlign: 'center',
     lineHeight: 24,
+    fontFamily: Theme.typography.fontFamily.regular,
   },
   footer: {
     paddingBottom: 50,
@@ -234,7 +236,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Theme.colors.text,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.header,
   },
   guestButton: {
     width: '100%',
@@ -248,6 +250,6 @@ const styles = StyleSheet.create({
   guestButtonText: {
     color: Theme.colors.textMuted,
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: Theme.typography.fontFamily.medium,
   },
 });

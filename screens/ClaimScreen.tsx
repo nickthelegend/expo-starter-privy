@@ -37,7 +37,7 @@ export default function ClaimScreen({ navigation, route }: ClaimScreenProps) {
     try {
       // Mock claim for now
       // const result = await claimReward(questId, wallet.address);
-      
+
       // Simulate blockchain transaction
       await new Promise(resolve => setTimeout(resolve, 3000));
 
@@ -83,7 +83,7 @@ export default function ClaimScreen({ navigation, route }: ClaimScreenProps) {
                   {rewardType === 'NFT' ? '🇿' : rewardType === 'TOKEN' ? '🪙' : '⭐'}
                 </Text>
               </LinearGradient>
-              
+
               <View
                 style={[
                   styles.typeBadge,
@@ -236,10 +236,11 @@ const styles = StyleSheet.create({
     color: Theme.colors.text,
     fontSize: 12,
     fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: Theme.spacing.sm,
     textAlign: 'center',
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
   rewardName: {
     fontSize: 20,
     color: Theme.colors.primary,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.header,
     marginBottom: Theme.spacing.md,
     textAlign: 'center',
   },
@@ -257,6 +258,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: Theme.spacing.xl,
     lineHeight: 20,
+    fontFamily: Theme.typography.fontFamily.regular,
   },
   walletInfo: {
     width: '100%',
@@ -271,11 +273,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Theme.colors.textMuted,
     marginBottom: 6,
+    fontFamily: Theme.typography.fontFamily.regular,
   },
   walletAddress: {
     fontSize: 14,
     color: Theme.colors.text,
     fontWeight: '500',
+    fontFamily: Theme.typography.fontFamily.mono,
   },
   claimButton: {
     width: '100%',
@@ -295,7 +299,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Theme.colors.text,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.header,
   },
   cancelButton: {
     padding: Theme.spacing.md,
@@ -304,6 +308,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.textMuted,
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   successContainer: {
     marginBottom: Theme.spacing.xl,
@@ -320,7 +325,7 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: Theme.typography.fontFamily.header,
     color: Theme.colors.text,
     marginBottom: Theme.spacing.sm,
     textAlign: 'center',
@@ -331,6 +336,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: Theme.spacing.xl,
     lineHeight: 20,
+    fontFamily: Theme.typography.fontFamily.regular,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -354,11 +360,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Theme.colors.textMuted,
     marginBottom: 6,
+    fontFamily: Theme.typography.fontFamily.medium,
   },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
     color: Theme.colors.primary,
+    fontFamily: Theme.typography.fontFamily.header,
   },
   doneButton: {
     width: '100%',
@@ -373,5 +381,6 @@ const styles = StyleSheet.create({
     color: Theme.colors.primary,
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
 });

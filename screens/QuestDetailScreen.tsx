@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     backButtonText: {
         color: Theme.colors.text,
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: Theme.typography.fontFamily.medium,
     },
     content: {
         paddingHorizontal: Theme.spacing.lg,
@@ -124,12 +124,12 @@ const styles = StyleSheet.create({
     },
     rarityText: {
         fontSize: 12,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.semiBold,
         color: Theme.colors.text,
     },
     title: {
         fontSize: 32,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.text,
         marginBottom: Theme.spacing.lg,
     },
@@ -148,10 +148,11 @@ const styles = StyleSheet.create({
         color: Theme.colors.textMuted,
         letterSpacing: 1.5,
         marginBottom: 8,
+        fontFamily: Theme.typography.fontFamily.medium,
     },
     rewardValue: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.primary,
     },
     section: {
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.text,
         marginBottom: Theme.spacing.md,
     },
@@ -167,6 +168,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: Theme.colors.textMuted,
         lineHeight: 24,
+        fontFamily: Theme.typography.fontFamily.regular,
     },
     locationCard: {
         flexDirection: 'row',
@@ -183,13 +185,14 @@ const styles = StyleSheet.create({
     },
     locationName: {
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: Theme.typography.fontFamily.semiBold,
         color: Theme.colors.text,
         marginBottom: 2,
     },
     distanceText: {
         fontSize: 12,
         color: Theme.colors.textMuted,
+        fontFamily: Theme.typography.fontFamily.regular,
     },
     startButton: {
         borderRadius: Theme.borderRadius.md,
@@ -204,6 +207,6 @@ const styles = StyleSheet.create({
     startButtonText: {
         color: Theme.colors.text,
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: Theme.typography.fontFamily.header,
     },
 });
