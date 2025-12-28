@@ -10,20 +10,35 @@ import InventoryScreen from '@/screens/InventoryScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
 import QuestScreen from '@/screens/QuestScreen';
 
+// SVG Icons
+import {
+  HomeIcon,
+  QuestsIcon,
+  ScanIcon,
+  InventoryIcon,
+  ProfileIcon
+} from '@/components/TabIcons';
+
 const Tab = createBottomTabNavigator();
 
 const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
-  const icons: { [key: string]: string } = {
-    Home: '🏠',
-    Quests: '📜',
-    Scan: '📱',
-    Inventory: '🎒',
-    Profile: '👤',
-  };
+  const IconComponent = {
+    Home: HomeIcon,
+    Quests: QuestsIcon,
+    Scan: ScanIcon,
+    Inventory: InventoryIcon,
+    Profile: ProfileIcon,
+  }[name];
+
+  if (!IconComponent) return null;
 
   return (
     <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
-      <Text style={styles.icon}>{icons[name]}</Text>
+      <IconComponent
+        width={24}
+        height={24}
+        fill={focused ? Theme.colors.primary : "#FFFFFF"}
+      />
     </View>
   );
 };
@@ -35,14 +50,14 @@ export default function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarStyle: {
           ...styles.tabBar,
           height: 60 + insets.bottom,
-          paddingBottom: insets.bottom + 5,
+          paddingBottom: insets.bottom,
         },
         tabBarActiveTintColor: Theme.colors.primary,
-        tabBarInactiveTintColor: Theme.colors.textMuted,
-        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarInactiveTintColor: "#FFFFFF",
       }}
     >
       <Tab.Screen

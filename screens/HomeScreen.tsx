@@ -84,6 +84,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       >
         {/* Header */}
         <View style={styles.header}>
+          <Image
+            source={require('../assets/images/icon-logo-text.png')}
+            style={styles.logoText}
+            resizeMode="contain"
+          />
           <View style={styles.headerTop}>
             <View>
               <Text style={styles.greeting}>Welcome back,</Text>
@@ -230,6 +235,11 @@ const styles = StyleSheet.create({
   header: {
     padding: Theme.spacing.lg,
     paddingTop: 60,
+  },
+  logoText: {
+    height: 40,
+    width: 120,
+    marginBottom: Theme.spacing.md,
   },
   headerTop: {
     flexDirection: 'row',
