@@ -5338,6 +5338,11 @@ loose-envify@^1.0.0, loose-envify@^1.4.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
+lottie-react-native@^7.3.4:
+  version "7.3.4"
+  resolved "https://registry.npmjs.org/lottie-react-native/-/lottie-react-native-7.3.4.tgz"
+  integrity sha512-XUh7eGFb7ID8JRdU6U4N4cYQeYmjtdQRvd8ZXJ6xrdSsn5gZD0c79ITOREPcwJg4YupBFHgyV1GXdAHQP+KYUQ==
+
 lru-cache@^10.0.1:
   version "10.4.3"
   resolved "https://registry.npmjs.org/lru-cache/-/lru-cache-10.4.3.tgz"
@@ -6393,7 +6398,7 @@ react-native-webview@*, react-native-webview@13.13.5:
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
 
-react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", "react-native@>= 0.64.3", react-native@>=0.56, react-native@0.79.6:
+react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", "react-native@>= 0.64.3", react-native@>=0.46, react-native@>=0.56, react-native@0.79.6:
   version "0.79.6"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.79.6.tgz"
   integrity sha512-kvIWSmf4QPfY41HC25TR285N7Fv0Pyn3DAEK8qRL9dA35usSaxsJkHfw+VqnonqJjXOaoKCEanwudRAJ60TBGA==

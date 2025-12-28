@@ -12,7 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { useAppStore } from '@/store/useAppStore';
-import { usePrivy } from '@privy-io/expo';
+import { usePrivy, useEmbeddedEthereumWallet } from '@privy-io/expo';
 import AutoCarousel from '@/components/AutoCarousel';
 import ClaimModal from '@/components/ClaimModal';
 
@@ -78,6 +78,13 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     }
   };
 
+  const { wallets } = useEmbeddedEthereumWallet();
+  const wallet = wallets.find(w => w.chain_type === 'ethereum');
+  const userAddress = wallet?.address || user?.wallet?.address;
+  const avatarUrl = userAddress
+    ? `https://api.dicebear.com/7.x/identicon/png?seed=${userAddress}`
+    : (user as any)?.linked_accounts?.[0]?.picture;
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -113,9 +120,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 style={styles.avatarBorder}
               >
                 <View style={styles.avatarInner}>
-                  {(user as any)?.linked_accounts?.[0]?.picture ? (
+                  {avatarUrl ? (
                     <Image
-                      source={{ uri: (user as any).linked_accounts[0].picture }}
+                      source={{ uri: avatarUrl }}
                       style={styles.avatarImage}
                     />
                   ) : (

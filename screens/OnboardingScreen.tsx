@@ -5,35 +5,30 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  Animated,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import { LinearGradient } from 'expo-linear-gradient';
+import LottieView from 'lottie-react-native';
 import { Theme } from '@/constants/Theme';
 import { useAppStore } from '@/store/useAppStore';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const slides = [
   {
     title: 'Explore Real-World Quests',
     description: 'Discover exciting quests and challenges on an interactive map near you',
-    icon: '🗺️',
-  },
-  {
-    title: 'Scan QR Codes',
-    description: 'Scan QR codes at quest locations to claim exclusive airdrops and rewards',
-    icon: '📱',
+    lottie: require('@/assets/lottie/connect.json'),
   },
   {
     title: 'Earn Daily Rewards',
     description: 'Build your streak with daily check-ins and spin to earn amazing prizes',
-    icon: '🎁',
+    lottie: require('@/assets/lottie/wallet.json'),
   },
   {
     title: 'Verified & Fair',
     description: 'Anti-sybil protection ensures genuine users get rewarded fairly',
-    icon: '✅',
+    lottie: require('@/assets/lottie/quest.json'),
   },
 ];
 
@@ -86,13 +81,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       >
         {slides.map((slide, index) => (
           <View key={index} style={styles.slide}>
-            <View style={styles.iconContainer}>
-              <LinearGradient
-                colors={Theme.gradients.primary}
-                style={styles.iconGradient}
-              >
-                <Text style={styles.icon}>{slide.icon}</Text>
-              </LinearGradient>
+            <View style={styles.animationContainer}>
+              <LottieView
+                source={slide.lottie}
+                autoPlay
+                loop
+                style={styles.lottie}
+              />
             </View>
 
             <Text style={styles.title}>{slide.title}</Text>
@@ -173,18 +168,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
-  iconContainer: {
-    marginBottom: 40,
-  },
-  iconGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  animationContainer: {
+    width: width * 0.8,
+    height: width * 0.8,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 40,
   },
-  icon: {
-    fontSize: 60,
+  lottie: {
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontSize: 28,

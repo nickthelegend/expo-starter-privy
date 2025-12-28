@@ -5,190 +5,176 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Dimensions,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { useAppStore } from '@/store/useAppStore';
-import { usePrivy } from '@privy-io/expo';
+import { Ionicons } from '@expo/vector-icons';
+// import { BlurView } from 'expo-blur'; // Unused, removing to avoid dependency issues
 
 const { width } = Dimensions.get('window');
 const ITEM_SIZE = (width - 48 - Theme.spacing.md) / 2;
 
-interface InventoryScreenProps {
-  navigation: any;
-}
-
-export default function InventoryScreen({ navigation }: InventoryScreenProps) {
-  const { rewards, userStats } = useAppStore();
-  const { user } = usePrivy();
+export default function InventoryScreen() {
+  const { userStats } = useAppStore();
   const [filter, setFilter] = useState<'ALL' | 'NFT' | 'TOKEN' | 'XP'>('ALL');
 
   const mockInventory = [
     {
       id: '1',
       type: 'NFT' as const,
-      name: 'Explorer Badge #123',
+      name: 'Pioneer Badge',
       image: '🏆',
-      rarity: 'rare',
+      rarity: 'legendary',
+      description: 'Awarded to early explorers.',
     },
     {
       id: '2',
       type: 'TOKEN' as const,
-      name: 'KYRA Token',
+      name: 'MNT Token',
       amount: 250,
       image: '🪙',
       rarity: 'common',
+      description: 'Native currency of Mantle.',
     },
     {
       id: '3',
       type: 'NFT' as const,
-      name: 'Mystery Box NFT',
+      name: 'Mystery Box',
       image: '🎁',
       rarity: 'epic',
+      description: 'Contains a surprise reward.',
     },
     {
       id: '4',
       type: 'TOKEN' as const,
-      name: 'KYRA Token',
-      amount: 100,
-      image: '🪙',
-      rarity: 'common',
+      name: 'XP Potion',
+      amount: 1,
+      image: '🧪',
+      rarity: 'rare',
+      description: 'Boosts your XP gain by 10%.',
     },
+    {
+      id: '5',
+      type: 'NFT' as const,
+      name: 'Golden Key',
+      image: '🔑',
+      rarity: 'rare',
+      description: 'Unlocks special quests.'
+    }
   ];
 
   const filteredInventory = filter === 'ALL'
     ? mockInventory
     : mockInventory.filter(item => item.type === filter);
 
-  const getRarityColor = (rarity: string) => {
+  const getRarityColors = (rarity: string) => {
     switch (rarity) {
-      case 'legendary': return '#FFD700';
-      case 'epic': return '#9333EA';
-      case 'rare': return '#3B82F6';
-      default: return '#6B7280';
+      case 'legendary': return ['#FFD700', '#FFA500'];
+      case 'epic': return ['#D946EF', '#9333EA'];
+      case 'rare': return ['#3B82F6', '#2563EB'];
+      default: return ['#9CA3AF', '#4B5563'];
     }
   };
 
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#000000', '#0a0514', '#000000'] as any}
+        colors={['#000000', '#1a103c', '#000000']}
         style={StyleSheet.absoluteFillObject}
       />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Stats Header */}
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        {/* Header Stats */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>My Inventory</Text>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.statsHorizontal}
-          >
-            {[
-              { label: 'Total XP', value: userStats.xp, icon: '⭐', colors: ['#6241E8', '#795CEB'] },
-              { label: 'Day Streak', value: userStats.streak, icon: '🔥', colors: ['#9333EA', '#C084FC'] },
-              { label: 'Level', value: userStats.level, icon: '🎯', colors: ['#3B82F6', '#60A5FA'] },
-              { label: 'Items', value: mockInventory.length, icon: '🏆', colors: ['#10B981', '#34D399'] },
-            ].map((stat, i) => (
-              <View key={i} style={styles.statCard}>
-                <LinearGradient
-                  colors={stat.colors as any}
-                  style={styles.statGradient}
-                >
-                  <Text style={styles.statIcon}>{stat.icon}</Text>
-                  <View>
-                    <Text style={styles.statValue}>{stat.value}</Text>
-                    <Text style={styles.statLabel}>{stat.label}</Text>
-                  </View>
-                </LinearGradient>
-              </View>
-            ))}
-          </ScrollView>
+          <Text style={styles.headerTitle}>Inventory</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statChip}>
+              <Ionicons name="star" size={14} color="#FBBF24" />
+              <Text style={styles.statText}>{userStats.xp} XP</Text>
+            </View>
+            <View style={styles.statChip}>
+              <Ionicons name="flame" size={14} color="#EF4444" />
+              <Text style={styles.statText}>{userStats.streak} Day Streak</Text>
+            </View>
+            <View style={styles.statChip}>
+              <Ionicons name="trophy" size={14} color="#60A5FA" />
+              <Text style={styles.statText}>Lvl {userStats.level}</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Filters */}
-        <View style={styles.filtersContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {['ALL', 'NFT', 'TOKEN', 'XP'].map((f) => (
-              <TouchableOpacity
-                key={f}
-                style={[
-                  styles.filterButton,
-                  filter === f && styles.filterButtonActive,
-                ]}
-                onPress={() => setFilter(f as any)}
-                data-testid={`filter-${f.toLowerCase()}`}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    filter === f && styles.filterTextActive,
-                  ]}
-                >
-                  {f}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Inventory Grid */}
-        <View style={styles.inventoryGrid}>
-          {filteredInventory.map((item) => (
+        {/* Filter Tabs */}
+        <View style={styles.filterContainer}>
+          {['ALL', 'NFT', 'TOKEN'].map((f) => (
             <TouchableOpacity
-              key={item.id}
-              style={styles.inventoryItem}
-              data-testid={`inventory-item-${item.id}`}
+              key={f}
+              onPress={() => setFilter(f as any)}
+              style={[
+                styles.filterTab,
+                filter === f && styles.filterTabActive,
+              ]}
             >
-              <LinearGradient
-                colors={['#181121', '#241a2f'] as any}
-                style={[
-                  styles.itemCard,
-                  { borderColor: getRarityColor(item.rarity) },
-                ]}
-              >
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemIcon}>{item.image}</Text>
-                  <View
-                    style={[
-                      styles.rarityIndicator,
-                      { backgroundColor: getRarityColor(item.rarity) },
-                    ]}
-                  />
-                </View>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemName} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  {item.type === 'TOKEN' && item.amount && (
-                    <Text style={styles.itemAmount}>{item.amount} KYRA</Text>
-                  )}
-                  <View
-                    style={[
-                      styles.itemType,
-                      { backgroundColor: getRarityColor(item.rarity) + '20' },
-                      { borderColor: getRarityColor(item.rarity) },
-                    ]}
-                  >
-                    <Text style={[styles.itemTypeText, { color: getRarityColor(item.rarity) }]}>{item.type}</Text>
-                  </View>
-                </View>
-              </LinearGradient>
+              <Text style={[
+                styles.filterText,
+                filter === f && styles.filterTextActive
+              ]}>
+                {f}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
+        {/* Inventory Grid */}
+        <View style={styles.grid}>
+          {filteredInventory.map((item) => {
+            const colors = getRarityColors(item.rarity);
+            return (
+              <TouchableOpacity key={item.id} style={styles.cardContainer}>
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']}
+                  style={styles.card}
+                >
+                  {/* Rarity Border Top */}
+                  <LinearGradient
+                    colors={colors}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{ height: 2, width: '100%', opacity: 0.8 }}
+                  />
+
+                  <View style={styles.cardContent}>
+                    <View style={[styles.iconContainer, { shadowColor: colors[0] }]}>
+                      <Text style={styles.itemEmoji}>{item.image}</Text>
+                    </View>
+
+                    <View style={styles.itemMeta}>
+                      <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                      <Text style={styles.itemRarity}>{item.rarity.toUpperCase()}</Text>
+                    </View>
+
+                    {item.type === 'TOKEN' && (
+                      <View style={styles.amountBadge}>
+                        <Text style={styles.amountText}>x{item.amount}</Text>
+                      </View>
+                    )}
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
         {filteredInventory.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>📦</Text>
-            <Text style={styles.emptyTitle}>No items yet</Text>
-            <Text style={styles.emptyDescription}>
-              Complete quests to earn NFTs and tokens
-            </Text>
+            <Ionicons name="cube-outline" size={64} color="rgba(255,255,255,0.2)" />
+            <Text style={styles.emptyText}>No items found</Text>
           </View>
         )}
       </ScrollView>
@@ -205,150 +191,141 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: Theme.spacing.lg,
     paddingTop: 60,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 32,
+    color: 'white',
     fontFamily: Theme.typography.fontFamily.header,
-    color: Theme.colors.text,
-    marginBottom: Theme.spacing.lg,
+    marginBottom: 12,
   },
-  statsHorizontal: {
-    paddingRight: Theme.spacing.lg,
-    gap: Theme.spacing.md,
+  statsRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
-  statCard: {
-    width: 140,
-    borderRadius: Theme.borderRadius.md,
-    overflow: 'hidden',
-  },
-  statGradient: {
-    padding: Theme.spacing.md,
+  statChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Theme.spacing.sm,
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
-  statIcon: {
-    fontSize: 24,
-  },
-  statValue: {
-    fontSize: 20,
-    fontFamily: Theme.typography.fontFamily.header,
-    color: Theme.colors.text,
-  },
-  statLabel: {
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.7)',
+  statText: {
+    color: 'white',
+    fontSize: 12,
     fontFamily: Theme.typography.fontFamily.medium,
   },
-  filtersContainer: {
-    paddingHorizontal: Theme.spacing.lg,
-    marginBottom: Theme.spacing.lg,
-  },
-  filterButton: {
+  filterContainer: {
+    flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: Theme.borderRadius.md,
-    backgroundColor: Theme.colors.surface,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-    marginRight: Theme.spacing.sm,
+    marginBottom: 20,
+    gap: 12,
   },
-  filterButtonActive: {
-    backgroundColor: Theme.colors.primary,
-    borderColor: Theme.colors.primary,
+  filterTab: {
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.2)',
+  },
+  filterTabActive: {
+    backgroundColor: 'white',
+    borderColor: 'white',
   },
   filterText: {
-    color: Theme.colors.textMuted,
-    fontSize: 14,
-    fontFamily: Theme.typography.fontFamily.semiBold,
+    color: '#9CA3AF',
+    fontSize: 13,
+    fontWeight: '600',
   },
   filterTextActive: {
-    color: Theme.colors.text,
+    color: 'black',
   },
-  inventoryGrid: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: Theme.spacing.lg,
+    paddingHorizontal: 20,
     gap: Theme.spacing.md,
-    paddingBottom: Theme.spacing.xl,
   },
-  inventoryItem: {
+  cardContainer: {
     width: ITEM_SIZE,
+    marginBottom: Theme.spacing.md,
   },
-  itemCard: {
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.md,
-    borderWidth: 1,
+  card: {
+    borderRadius: 16,
     overflow: 'hidden',
-    height: 200, // Fixed height for uniformity
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    height: 180,
   },
-  itemContent: {
+  cardContent: {
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 100, // Reduced height to fit info better
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    position: 'relative',
-  },
-  itemIcon: {
-    fontSize: 54,
-  },
-  rarityIndicator: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  itemInfo: {
-    padding: Theme.spacing.sm,
     flex: 1,
-    justifyContent: 'space-between',
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  itemEmoji: {
+    fontSize: 32,
+  },
+  itemMeta: {
+    alignItems: 'center',
   },
   itemName: {
-    color: Theme.colors.text,
-    fontSize: 13,
+    color: 'white',
+    fontSize: 14,
     fontFamily: Theme.typography.fontFamily.semiBold,
-    marginBottom: 2,
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  itemAmount: {
-    color: Theme.colors.primary,
-    fontSize: 12,
-    fontFamily: Theme.typography.fontFamily.semiBold,
-    marginBottom: Theme.spacing.xs,
+  itemRarity: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
-  itemType: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
+  amountBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    borderWidth: 1,
   },
-  itemTypeText: {
+  amountText: {
+    color: 'white',
     fontSize: 10,
-    fontFamily: Theme.typography.fontFamily.semiBold,
+    fontWeight: 'bold',
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    marginTop: 60,
+    opacity: 0.5,
   },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: Theme.spacing.md,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontFamily: Theme.typography.fontFamily.header,
-    color: Theme.colors.text,
-    marginBottom: Theme.spacing.sm,
-  },
-  emptyDescription: {
-    fontSize: 14,
-    color: Theme.colors.textMuted,
-    textAlign: 'center',
-    fontFamily: Theme.typography.fontFamily.regular,
+  emptyText: {
+    color: 'white',
+    marginTop: 16,
+    fontSize: 16,
   },
 });
+

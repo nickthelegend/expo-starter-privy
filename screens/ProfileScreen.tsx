@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
@@ -109,7 +110,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                 style={styles.avatarBorder}
               >
                 <View style={styles.avatarInner}>
-                  {(user as any)?.linked_accounts?.[0]?.picture ? (
+                  {wallet?.address ? (
+                    <Image
+                      source={{ uri: `https://api.dicebear.com/7.x/identicon/png?seed=${wallet.address}` }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (user as any)?.linked_accounts?.[0]?.picture ? (
                     <Image
                       source={{ uri: (user as any).linked_accounts[0].picture }}
                       style={styles.avatarImage}
@@ -161,7 +167,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <Text style={styles.sectionTitle}>Connected Wallet</Text>
             <TouchableOpacity
               style={styles.premiumCard}
-              onPress={() => copyToClipboard(wallet.address)}
+              onPress={() => navigation.navigate('WalletDetail')}
             >
               <LinearGradient
                 colors={['rgba(98, 65, 232, 0.1)', 'rgba(147, 51, 234, 0.05)'] as any}
