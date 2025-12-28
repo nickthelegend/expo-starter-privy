@@ -57,6 +57,29 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     );
   };
 
+  const [mantleBalance, setMantleBalance] = React.useState<string | null>(null);
+  const MANTLE_RPC_URL = "https://mantle-sepolia.g.alchemy.com/v2/3qRB0TMQQv3hyKgav_6lF";
+
+  React.useEffect(() => {
+    const fetchBalance = async () => {
+      if (!wallet?.address) return;
+      try {
+        const { createPublicClient, http, formatEther } = await import("viem");
+        const publicClient = createPublicClient({
+          chain: mantleSepoliaTestnet,
+          transport: http(MANTLE_RPC_URL),
+        });
+        const balance = await publicClient.getBalance({
+          address: wallet.address as `0x${string}`,
+        });
+        setMantleBalance(formatEther(balance));
+      } catch (err) {
+        console.error("Error fetching Mantle balance:", err);
+      }
+    };
+    fetchBalance();
+  }, [wallet?.address]);
+
   const copyToClipboard = (text: string) => {
     // Note: Would need expo-clipboard for actual copying
     Alert.alert('Copied', 'Address copied to clipboard');
@@ -123,8 +146,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <Text style={styles.miniStatLabel}>Quests</Text>
           </View>
           <View style={[styles.miniStat, styles.miniStatCenter]}>
-            <Text style={styles.miniStatValue}>450</Text>
-            <Text style={styles.miniStatLabel}>KYRA</Text>
+            <Text style={styles.miniStatValue}>{mantleBalance ? parseFloat(mantleBalance).toFixed(2) : "0.00"}</Text>
+            <Text style={styles.miniStatLabel}>MNT</Text>
           </View>
           <View style={styles.miniStat}>
             <Text style={styles.miniStatValue}>85%</Text>
@@ -149,9 +172,17 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                     <Text style={styles.walletEmoji}>💳</Text>
                   </View>
                   <View style={styles.walletTextContainer}>
-                    <Text style={styles.walletTypeLabel}>{walletType}</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={styles.walletTypeLabel}>{walletType}</Text>
+                      <View style={styles.networkBadge}>
+                        <Text style={styles.networkText}>Mantle L2</Text>
+                      </View>
+                    </View>
                     <Text style={styles.walletAddressText} numberOfLines={1}>
                       {wallet.address}
+                    </Text>
+                    <Text style={[styles.walletTypeLabel, { marginTop: 4, color: Theme.colors.primary }]}>
+                      Balance: {mantleBalance ? `${parseFloat(mantleBalance).toFixed(4)} MNT` : 'Loading...'}
                     </Text>
                   </View>
                 </View>
@@ -533,5 +564,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Theme.colors.textMuted,
     opacity: 0.5,
+  },
+  networkBadge: {
+    backgroundColor: 'rgba(124, 58, 237, 0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    marginLeft: 8,
+  },
+  networkText: {
+    color: '#7C3AED',
+    fontSize: 10,
+    fontWeight: '600',
   },
 });

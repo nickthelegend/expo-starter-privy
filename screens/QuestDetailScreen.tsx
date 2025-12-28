@@ -116,7 +116,10 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
                         </View>
                     </View>
 
-                    <TouchableOpacity style={styles.startButton}>
+                    <TouchableOpacity
+                        style={styles.startButton}
+                        onPress={() => navigation.navigate('QMap', { quest })}
+                    >
                         <LinearGradient
                             colors={Theme.gradients.primary as any}
                             style={styles.startGradient}
