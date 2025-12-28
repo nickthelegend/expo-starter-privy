@@ -8,13 +8,14 @@ import MapScreen from '@/screens/MapScreen';
 import ScanScreen from '@/screens/ScanScreen';
 import InventoryScreen from '@/screens/InventoryScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
+import QuestScreen from '@/screens/QuestScreen';
 
 const Tab = createBottomTabNavigator();
 
 const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
   const icons: { [key: string]: string } = {
     Home: '🏠',
-    Map: '🗺️',
+    Quests: '📜',
     Scan: '📱',
     Inventory: '🎒',
     Profile: '👤',
@@ -49,15 +50,13 @@ export default function MainTabs() {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabBarIcon name="Home" focused={focused} />,
-          tabBarTestID: 'tab-home',
         }}
       />
       <Tab.Screen
-        name="Map"
-        component={MapScreen}
+        name="Quests"
+        component={QuestScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabBarIcon name="Map" focused={focused} />,
-          tabBarTestID: 'tab-map',
+          tabBarIcon: ({ focused }) => <TabBarIcon name="Quests" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -65,9 +64,8 @@ export default function MainTabs() {
         component={ScanScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabBarIcon name="Scan" focused={focused} />,
-          tabBarTestID: 'tab-scan',
           tabBarButton: (props) => (
-            <View {...props} style={[props.style, styles.scanButtonContainer]}>
+            <View {...(props as any)} style={[props.style, styles.scanButtonContainer]}>
               <View style={styles.scanButton}>
                 {props.children}
               </View>
@@ -80,7 +78,6 @@ export default function MainTabs() {
         component={InventoryScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabBarIcon name="Inventory" focused={focused} />,
-          tabBarTestID: 'tab-inventory',
         }}
       />
       <Tab.Screen
@@ -88,7 +85,6 @@ export default function MainTabs() {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabBarIcon name="Profile" focused={focused} />,
-          tabBarTestID: 'tab-profile',
         }}
       />
     </Tab.Navigator>

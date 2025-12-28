@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
-import { usePrivy, getUserEmbeddedEthereumWallet } from '@privy-io/expo';
+import { usePrivy, getUserEmbeddedEthereumWallet, useEmbeddedEthereumWallet, PrivyEmbeddedWalletProvider } from '@privy-io/expo';
+import { base, mainnet, optimism, arbitrum, polygon, mantleSepoliaTestnet } from "viem/chains";
 
 interface ProfileScreenProps {
   navigation: any;
@@ -17,10 +18,29 @@ interface ProfileScreenProps {
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { user, logout } = usePrivy();
+  const { wallets } = useEmbeddedEthereumWallet();
   const embeddedWallet = getUserEmbeddedEthereumWallet(user);
-  const externalWallet = user?.wallet;
+  const externalWallet = (user as any)?.wallet;
   const wallet = embeddedWallet || externalWallet;
   const walletType = embeddedWallet ? 'Embedded Wallet' : 'External Wallet';
+
+  const switchChain = useCallback(
+    async (provider: PrivyEmbeddedWalletProvider, id: string) => {
+      try {
+        console.log(`[NetworkSwitch] Requesting switch to chainId: ${id}`);
+        const result = await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: id }],
+        });
+        console.log(`[NetworkSwitch] Success: result =`, result);
+        Alert.alert('Success', `Chain switched successfully to ${id}`);
+      } catch (e) {
+        console.error(`[NetworkSwitch] Error:`, e);
+        Alert.alert('Error', 'Failed to switch chain');
+      }
+    },
+    []
+  );
 
   const handleLogout = () => {
     Alert.alert(
@@ -53,7 +73,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         {/* Profile Header */}
         <View style={styles.header}>
           <LinearGradient
-            colors={Theme.gradients.primary}
+            colors={Theme.gradients.primary as any}
             style={styles.avatar}
           >
             <Text style={styles.avatarText}>
@@ -102,13 +122,43 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             </View>
             <View style={styles.progressBar}>
               <LinearGradient
-                colors={Theme.gradients.primary}
+                colors={Theme.gradients.primary as any}
                 style={[styles.progressFill, { width: '75%' }]}
               />
             </View>
             <Text style={styles.trustDescription}>
               Complete more quests to increase your trust level
             </Text>
+          </View>
+        </View>
+
+        {/* Network Selection */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Network</Text>
+          <View style={styles.networkGrid}>
+            {[
+              base,
+              mainnet,
+              optimism,
+              arbitrum,
+              polygon,
+              mantleSepoliaTestnet,
+            ].map((chain) => (
+              <TouchableOpacity
+                key={chain.id}
+                style={styles.networkButton}
+                onPress={async () => {
+                  if (wallets.length > 0) {
+                    const provider = await wallets[0].getProvider();
+                    switchChain(provider, `0x${chain.id.toString(16)}`);
+                  } else {
+                    Alert.alert('Error', 'No embedded wallet found');
+                  }
+                }}
+              >
+                <Text style={styles.networkButtonText}>{chain.name}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -318,6 +368,26 @@ const styles = StyleSheet.create({
   trustDescription: {
     fontSize: 12,
     color: Theme.colors.textMuted,
+  },
+  networkGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Theme.spacing.sm,
+  },
+  networkButton: {
+    backgroundColor: Theme.colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
+    minWidth: '30%',
+    alignItems: 'center',
+  },
+  networkButtonText: {
+    color: Theme.colors.text,
+    fontSize: 12,
+    fontWeight: '600',
   },
   settingItem: {
     flexDirection: 'row',

@@ -14,7 +14,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { usePrivy } from '@privy-io/expo';
 
 const { width } = Dimensions.get('window');
-const ITEM_SIZE = (width - 48) / 2;
+const ITEM_SIZE = (width - 48 - Theme.spacing.md) / 2;
 
 interface InventoryScreenProps {
   navigation: any;
@@ -74,7 +74,7 @@ export default function InventoryScreen({ navigation }: InventoryScreenProps) {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#000000', '#0a0514', '#000000']}
+        colors={['#000000', '#0a0514', '#000000'] as any}
         style={StyleSheet.absoluteFillObject}
       />
 
@@ -82,52 +82,32 @@ export default function InventoryScreen({ navigation }: InventoryScreenProps) {
         {/* Stats Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>My Inventory</Text>
-          
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <LinearGradient
-                colors={['#6241E8', '#795CEB']}
-                style={styles.statGradient}
-              >
-                <Text style={styles.statIcon}>⭐</Text>
-                <Text style={styles.statValue}>{userStats.xp}</Text>
-                <Text style={styles.statLabel}>Total XP</Text>
-              </LinearGradient>
-            </View>
-            
-            <View style={styles.statCard}>
-              <LinearGradient
-                colors={['#9333EA', '#C084FC']}
-                style={styles.statGradient}
-              >
-                <Text style={styles.statIcon}>🔥</Text>
-                <Text style={styles.statValue}>{userStats.streak}</Text>
-                <Text style={styles.statLabel}>Day Streak</Text>
-              </LinearGradient>
-            </View>
-            
-            <View style={styles.statCard}>
-              <LinearGradient
-                colors={['#3B82F6', '#60A5FA']}
-                style={styles.statGradient}
-              >
-                <Text style={styles.statIcon}>🎯</Text>
-                <Text style={styles.statValue}>{userStats.level}</Text>
-                <Text style={styles.statLabel}>Level</Text>
-              </LinearGradient>
-            </View>
-            
-            <View style={styles.statCard}>
-              <LinearGradient
-                colors={['#10B981', '#34D399']}
-                style={styles.statGradient}
-              >
-                <Text style={styles.statIcon}>🏆</Text>
-                <Text style={styles.statValue}>{mockInventory.length}</Text>
-                <Text style={styles.statLabel}>Items</Text>
-              </LinearGradient>
-            </View>
-          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.statsHorizontal}
+          >
+            {[
+              { label: 'Total XP', value: userStats.xp, icon: '⭐', colors: ['#6241E8', '#795CEB'] },
+              { label: 'Day Streak', value: userStats.streak, icon: '🔥', colors: ['#9333EA', '#C084FC'] },
+              { label: 'Level', value: userStats.level, icon: '🎯', colors: ['#3B82F6', '#60A5FA'] },
+              { label: 'Items', value: mockInventory.length, icon: '🏆', colors: ['#10B981', '#34D399'] },
+            ].map((stat, i) => (
+              <View key={i} style={styles.statCard}>
+                <LinearGradient
+                  colors={stat.colors as any}
+                  style={styles.statGradient}
+                >
+                  <Text style={styles.statIcon}>{stat.icon}</Text>
+                  <View>
+                    <Text style={styles.statValue}>{stat.value}</Text>
+                    <Text style={styles.statLabel}>{stat.label}</Text>
+                  </View>
+                </LinearGradient>
+              </View>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Filters */}
@@ -164,9 +144,10 @@ export default function InventoryScreen({ navigation }: InventoryScreenProps) {
               style={styles.inventoryItem}
               data-testid={`inventory-item-${item.id}`}
             >
-              <View
+              <LinearGradient
+                colors={['#181121', '#241a2f'] as any}
                 style={[
-                  styles.itemBorder,
+                  styles.itemCard,
                   { borderColor: getRarityColor(item.rarity) },
                 ]}
               >
@@ -179,21 +160,24 @@ export default function InventoryScreen({ navigation }: InventoryScreenProps) {
                     ]}
                   />
                 </View>
-                <Text style={styles.itemName} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                {item.type === 'TOKEN' && item.amount && (
-                  <Text style={styles.itemAmount}>{item.amount} KYRA</Text>
-                )}
-                <View
-                  style={[
-                    styles.itemType,
-                    { backgroundColor: getRarityColor(item.rarity) },
-                  ]}
-                >
-                  <Text style={styles.itemTypeText}>{item.type}</Text>
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  {item.type === 'TOKEN' && item.amount && (
+                    <Text style={styles.itemAmount}>{item.amount} KYRA</Text>
+                  )}
+                  <View
+                    style={[
+                      styles.itemType,
+                      { backgroundColor: getRarityColor(item.rarity) + '20' },
+                      { borderColor: getRarityColor(item.rarity) },
+                    ]}
+                  >
+                    <Text style={[styles.itemTypeText, { color: getRarityColor(item.rarity) }]}>{item.type}</Text>
+                  </View>
                 </View>
-              </View>
+              </LinearGradient>
             </TouchableOpacity>
           ))}
         </View>
@@ -230,33 +214,32 @@ const styles = StyleSheet.create({
     color: Theme.colors.text,
     marginBottom: Theme.spacing.lg,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  statsHorizontal: {
+    paddingRight: Theme.spacing.lg,
     gap: Theme.spacing.md,
   },
   statCard: {
-    width: (width - 48 - 12) / 2,
+    width: 140,
     borderRadius: Theme.borderRadius.md,
     overflow: 'hidden',
   },
   statGradient: {
     padding: Theme.spacing.md,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: Theme.spacing.sm,
   },
   statIcon: {
-    fontSize: 32,
-    marginBottom: Theme.spacing.xs,
+    fontSize: 24,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: Theme.colors.text,
-    marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.7)',
   },
   filtersContainer: {
     paddingHorizontal: Theme.spacing.lg,
@@ -293,49 +276,56 @@ const styles = StyleSheet.create({
   inventoryItem: {
     width: ITEM_SIZE,
   },
-  itemBorder: {
+  itemCard: {
     backgroundColor: Theme.colors.surface,
     borderRadius: Theme.borderRadius.md,
-    borderWidth: 2,
-    padding: Theme.spacing.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+    height: 200, // Fixed height for uniformity
   },
   itemContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 100,
+    height: 100, // Reduced height to fit info better
+    backgroundColor: 'rgba(0,0,0,0.2)',
     position: 'relative',
   },
   itemIcon: {
-    fontSize: 48,
+    fontSize: 54,
   },
   rarityIndicator: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    top: 10,
+    right: 10,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  itemInfo: {
+    padding: Theme.spacing.sm,
+    flex: 1,
+    justifyContent: 'space-between',
   },
   itemName: {
     color: Theme.colors.text,
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: Theme.spacing.sm,
-    marginBottom: 4,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   itemAmount: {
-    color: Theme.colors.textMuted,
+    color: Theme.colors.primary,
     fontSize: 12,
+    fontWeight: 'bold',
     marginBottom: Theme.spacing.xs,
   },
   itemType: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
   },
   itemTypeText: {
-    color: Theme.colors.text,
     fontSize: 10,
     fontWeight: 'bold',
   },
