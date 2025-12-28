@@ -117,19 +117,36 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </LinearGradient>
             </TouchableOpacity>
           </View>
-          <View style={styles.stats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userStats.level}</Text>
-              <Text style={styles.statLabel}>Level</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userStats.xp}</Text>
-              <Text style={styles.statLabel}>XP</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userStats.streak}</Text>
-              <Text style={styles.statLabel}>Streak</Text>
-            </View>
+        </View>
+
+        {/* Active Quests Carousel - Now at the top */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Active Quests</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Quests')}>
+              <Text style={styles.seeAll}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          <AutoCarousel data={mockQuests} />
+        </View>
+
+        {/* Quest Fast Finish Leaderboard */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Fastest Finishers</Text>
+          <View style={styles.leaderboardContainer}>
+            {[
+              { id: '1', name: 'CryptoKnight', time: '12m 30s', rank: 1, avatar: '🥇' },
+              { id: '2', name: 'MantleMaster', time: '14m 45s', rank: 2, avatar: '🥈' },
+              { id: '3', name: 'Web3Wanderer', time: '18m 10s', rank: 3, avatar: '🥉' },
+            ].map((user, index) => (
+              <View key={user.id} style={styles.leaderboardItem}>
+                <View style={styles.leaderboardLeft}>
+                  <Text style={styles.rankText}>{user.avatar}</Text>
+                  <Text style={styles.leaderboardName}>{user.name}</Text>
+                </View>
+                <Text style={styles.leaderboardTime}>{user.time}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
@@ -153,22 +170,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 {dailyCheckInCompleted ? 'Checked In!' : 'Check In Today'}
               </Text>
               <Text style={styles.checkInReward}>
-                {dailyCheckInCompleted ? 'Come back tomorrow' : '+10 XP'}
+                {dailyCheckInCompleted ? '+0 XP' : '+10 XP'}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
-        </View>
-
-        {/* Active Quests Carousel */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Active Quests</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Map')}>
-              <Text style={styles.seeAll}>See all</Text>
-            </TouchableOpacity>
-          </View>
-
-          <AutoCarousel data={mockQuests} />
         </View>
 
         {/* Spin to Earn */}
@@ -319,6 +324,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Theme.colors.text,
     marginBottom: Theme.spacing.md,
+  },
+  leaderboardContainer: {
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.borderRadius.md,
+    padding: Theme.spacing.md,
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
+  },
+  leaderboardItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  leaderboardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  rankText: {
+    fontSize: 20,
+  },
+  leaderboardName: {
+    color: Theme.colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  leaderboardTime: {
+    color: Theme.colors.primary,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   seeAll: {
     fontSize: 14,

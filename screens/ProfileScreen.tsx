@@ -70,83 +70,118 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <View style={styles.header}>
+        {/* Profile Header with Cover */}
+        <View style={styles.headerContainer}>
           <LinearGradient
-            colors={Theme.gradients.primary as any}
-            style={styles.avatar}
-          >
-            <Text style={styles.avatarText}>
-              {user?.id ? user.id.slice(0, 2).toUpperCase() : 'KQ'}
+            colors={['#6241E8', '#9333EA', '#000000'] as any}
+            style={styles.coverGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+
+          <View style={styles.headerContent}>
+            <View style={styles.avatarContainer}>
+              <LinearGradient
+                colors={Theme.gradients.primary as any}
+                style={styles.avatarBorder}
+              >
+                <View style={styles.avatarInner}>
+                  {(user as any)?.linked_accounts?.[0]?.picture ? (
+                    <Image
+                      source={{ uri: (user as any).linked_accounts[0].picture }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <Text style={styles.avatarText}>
+                      {user?.id ? user.id.slice(0, 2).toUpperCase() : 'KQ'}
+                    </Text>
+                  )}
+                </View>
+              </LinearGradient>
+              <View style={styles.onlineBadge} />
+            </View>
+
+            <Text style={styles.userName}>
+              {user?.id ? `Explorer ${user.id.slice(0, 6)}` : 'Guest Explorer'}
             </Text>
-          </LinearGradient>
-          <Text style={styles.userName} data-testid="profile-user-name">
-            {user?.id ? `User ${user.id.slice(0, 8)}` : 'Guest User'}
-          </Text>
-          <View style={styles.verificationBadge}>
-            <Text style={styles.verificationText}>✅ Verified</Text>
+
+            <View style={styles.badgeRow}>
+              <View style={styles.verificationBadge}>
+                <Text style={styles.verificationText}>✅ Verified</Text>
+              </View>
+              <View style={styles.trustBadgeSmall}>
+                <Text style={styles.trustTextSmall}>🌟 Level 3</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Global Stats */}
+        <View style={styles.statsRow}>
+          <View style={styles.miniStat}>
+            <Text style={styles.miniStatValue}>12</Text>
+            <Text style={styles.miniStatLabel}>Quests</Text>
+          </View>
+          <View style={[styles.miniStat, styles.miniStatCenter]}>
+            <Text style={styles.miniStatValue}>450</Text>
+            <Text style={styles.miniStatLabel}>KYRA</Text>
+          </View>
+          <View style={styles.miniStat}>
+            <Text style={styles.miniStatValue}>85%</Text>
+            <Text style={styles.miniStatLabel}>Trust</Text>
           </View>
         </View>
 
         {/* Wallet Section */}
         {wallet && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Wallet</Text>
+            <Text style={styles.sectionTitle}>Connected Wallet</Text>
             <TouchableOpacity
-              style={styles.walletCard}
+              style={styles.premiumCard}
               onPress={() => copyToClipboard(wallet.address)}
-              data-testid="wallet-address-card"
             >
-              <View style={styles.walletHeader}>
-                <Text style={styles.walletLabel}>{walletType}</Text>
-                <View style={styles.networkBadge}>
-                  <View style={styles.networkDot} />
-                  <Text style={styles.networkText}>Connected</Text>
+              <LinearGradient
+                colors={['rgba(98, 65, 232, 0.1)', 'rgba(147, 51, 234, 0.05)'] as any}
+                style={styles.cardGradient}
+              >
+                <View style={styles.walletInfo}>
+                  <View style={styles.walletIconContainer}>
+                    <Text style={styles.walletEmoji}>💳</Text>
+                  </View>
+                  <View style={styles.walletTextContainer}>
+                    <Text style={styles.walletTypeLabel}>{walletType}</Text>
+                    <Text style={styles.walletAddressText} numberOfLines={1}>
+                      {wallet.address}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              <Text style={styles.walletAddress} numberOfLines={1}>
-                {wallet.address}
-              </Text>
-              <Text style={styles.copyHint}>Tap to copy</Text>
+                <View style={styles.cardFooter}>
+                  <View style={styles.activeIndicator}>
+                    <View style={styles.indicatorDot} />
+                    <Text style={styles.indicatorText}>Active</Text>
+                  </View>
+                  <Text style={styles.tapToCopy}>Tap to copy address</Text>
+                </View>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Trust Level */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Trust Level</Text>
-          <View style={styles.trustCard}>
-            <View style={styles.trustHeader}>
-              <Text style={styles.trustLevel}>Level 3</Text>
-              <Text style={styles.trustBadge}>🌟 Elite</Text>
-            </View>
-            <View style={styles.progressBar}>
-              <LinearGradient
-                colors={Theme.gradients.primary as any}
-                style={[styles.progressFill, { width: '75%' }]}
-              />
-            </View>
-            <Text style={styles.trustDescription}>
-              Complete more quests to increase your trust level
-            </Text>
-          </View>
-        </View>
-
         {/* Network Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Network</Text>
-          <View style={styles.networkGrid}>
+          <Text style={styles.sectionTitle}>Network Selection</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.networkScroll}>
             {[
-              base,
-              mainnet,
-              optimism,
-              arbitrum,
-              polygon,
-              mantleSepoliaTestnet,
+              { ...mantleSepoliaTestnet, icon: '🔥' },
+              { ...base, icon: '🔵' },
+              { ...polygon, icon: '🟣' },
+              { ...arbitrum, icon: '🛡️' },
+              { ...optimism, icon: '🔴' },
+              { ...mainnet, icon: '💎' },
             ].map((chain) => (
               <TouchableOpacity
                 key={chain.id}
-                style={styles.networkButton}
+                style={styles.networkCard}
                 onPress={async () => {
                   if (wallets.length > 0) {
                     const provider = await wallets[0].getProvider();
@@ -156,75 +191,47 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                   }
                 }}
               >
-                <Text style={styles.networkButtonText}>{chain.name}</Text>
+                <Text style={styles.networkIcon}>{chain.icon}</Text>
+                <Text style={styles.networkName}>{chain.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Account Settings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account Settings</Text>
+          <View style={styles.settingsGrid}>
+            {[
+              { id: 'notif', title: 'Notifications', desc: 'Alerts & Sounds', icon: '🔔' },
+              { id: 'loc', title: 'Location', desc: 'Map Visibility', icon: '📍' },
+              { id: 'priv', title: 'Privacy', desc: 'Data Usage', icon: '🔒' },
+              { id: 'help', title: 'Support', desc: 'Get Assistance', icon: '❓' },
+            ].map((item) => (
+              <TouchableOpacity key={item.id} style={styles.modernSettingItem}>
+                <View style={styles.settingIconBox}>
+                  <Text style={styles.settingEmoji}>{item.icon}</Text>
+                </View>
+                <View style={styles.settingTextBox}>
+                  <Text style={styles.settingMainText}>{item.title}</Text>
+                  <Text style={styles.settingSubText}>{item.desc}</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Settings */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Settings</Text>
-
+        {/* Actions */}
+        <View style={styles.footerActions}>
           <TouchableOpacity
-            style={styles.settingItem}
-            data-testid="notifications-setting"
+            style={styles.logoutButtonModern}
+            onPress={handleLogout}
           >
-            <Text style={styles.settingIcon}>🔔</Text>
-            <View style={styles.settingContent}>
-              <Text style={styles.settingTitle}>Notifications</Text>
-              <Text style={styles.settingDescription}>Manage notification preferences</Text>
-            </View>
-            <Text style={styles.settingArrow}>›</Text>
+            <Text style={styles.logoutTextModern}>Sign Out</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.settingItem}
-            data-testid="location-setting"
-          >
-            <Text style={styles.settingIcon}>📍</Text>
-            <View style={styles.settingContent}>
-              <Text style={styles.settingTitle}>Location</Text>
-              <Text style={styles.settingDescription}>Enable location services</Text>
-            </View>
-            <Text style={styles.settingArrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.settingItem}
-            data-testid="privacy-setting"
-          >
-            <Text style={styles.settingIcon}>🔒</Text>
-            <View style={styles.settingContent}>
-              <Text style={styles.settingTitle}>Privacy</Text>
-              <Text style={styles.settingDescription}>Privacy and security settings</Text>
-            </View>
-            <Text style={styles.settingArrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.settingItem}
-            data-testid="help-setting"
-          >
-            <Text style={styles.settingIcon}>❓</Text>
-            <View style={styles.settingContent}>
-              <Text style={styles.settingTitle}>Help & Support</Text>
-              <Text style={styles.settingDescription}>Get help or contact support</Text>
-            </View>
-            <Text style={styles.settingArrow}>›</Text>
-          </TouchableOpacity>
+          <Text style={styles.versionInfo}>KyraQuest v1.0.0 • Protocol Mainnet</Text>
         </View>
-
-        {/* Logout Button */}
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          data-testid="logout-button"
-        >
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.version}>Version 1.0.0</Text>
       </ScrollView>
     </View>
   );
@@ -238,42 +245,122 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  header: {
-    alignItems: 'center',
-    paddingTop: 60,
+  headerContainer: {
     paddingBottom: Theme.spacing.xl,
+    backgroundColor: Theme.colors.background,
   },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    justifyContent: 'center',
+  coverGradient: {
+    height: 180,
+    width: '100%',
+  },
+  headerContent: {
     alignItems: 'center',
+    marginTop: -60,
+    paddingHorizontal: Theme.spacing.lg,
+  },
+  avatarContainer: {
+    position: 'relative',
     marginBottom: Theme.spacing.md,
   },
+  avatarBorder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    padding: 3,
+  },
+  avatarInner: {
+    flex: 1,
+    backgroundColor: Theme.colors.card,
+    borderRadius: 57,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
   avatarText: {
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: 'bold',
     color: Theme.colors.text,
+  },
+  onlineBadge: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#10B981',
+    borderWidth: 4,
+    borderColor: Theme.colors.background,
   },
   userName: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: Theme.colors.text,
-    marginBottom: Theme.spacing.sm,
+    marginBottom: 8,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   verificationBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Theme.colors.success,
+    borderColor: 'rgba(59, 130, 246, 0.3)',
   },
   verificationText: {
-    color: Theme.colors.success,
+    color: '#60A5FA',
     fontSize: 12,
     fontWeight: '600',
+  },
+  trustBadgeSmall: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  trustTextSmall: {
+    color: '#FBBF24',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: Theme.spacing.lg,
+    backgroundColor: Theme.colors.card,
+    marginHorizontal: Theme.spacing.lg,
+    borderRadius: Theme.borderRadius.lg,
+    marginBottom: Theme.spacing.xl,
+    ...Theme.shadows.medium,
+  },
+  miniStat: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  miniStatCenter: {
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  miniStatValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Theme.colors.text,
+  },
+  miniStatLabel: {
+    fontSize: 12,
+    color: Theme.colors.textMuted,
+    marginTop: 4,
   },
   section: {
     paddingHorizontal: Theme.spacing.lg,
@@ -284,160 +371,164 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Theme.colors.text,
     marginBottom: Theme.spacing.md,
+    opacity: 0.8,
   },
-  walletCard: {
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.md,
-    padding: Theme.spacing.lg,
+  premiumCard: {
+    borderRadius: Theme.borderRadius.lg,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Theme.colors.border,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  walletHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Theme.spacing.sm,
-  },
-  walletLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Theme.colors.textMuted,
-  },
-  networkBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  networkDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Theme.colors.success,
-    marginRight: 6,
-  },
-  networkText: {
-    fontSize: 11,
-    color: Theme.colors.success,
-    fontWeight: '600',
-  },
-  walletAddress: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Theme.colors.text,
-    marginBottom: 4,
-  },
-  copyHint: {
-    fontSize: 12,
-    color: Theme.colors.textMuted,
-  },
-  trustCard: {
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.md,
+  cardGradient: {
     padding: Theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
   },
-  trustHeader: {
+  walletInfo: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Theme.spacing.md,
   },
-  trustLevel: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Theme.colors.text,
-  },
-  trustBadge: {
-    fontSize: 16,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: Theme.colors.border,
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: Theme.spacing.sm,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  trustDescription: {
-    fontSize: 12,
-    color: Theme.colors.textMuted,
-  },
-  networkGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Theme.spacing.sm,
-  },
-  networkButton: {
-    backgroundColor: Theme.colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-    minWidth: '30%',
+  walletIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  networkButtonText: {
-    color: Theme.colors.text,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.md,
-    padding: Theme.spacing.md,
-    marginBottom: Theme.spacing.sm,
-    borderWidth: 1,
-    borderColor: Theme.colors.border,
-  },
-  settingIcon: {
-    fontSize: 24,
     marginRight: Theme.spacing.md,
   },
-  settingContent: {
+  walletEmoji: {
+    fontSize: 24,
+  },
+  walletTextContainer: {
     flex: 1,
   },
-  settingTitle: {
+  walletTypeLabel: {
+    fontSize: 14,
+    color: Theme.colors.textMuted,
+    marginBottom: 2,
+  },
+  walletAddressText: {
     fontSize: 16,
     fontWeight: '600',
     color: Theme.colors.text,
-    marginBottom: 2,
+    fontFamily: 'monospace',
   },
-  settingDescription: {
-    fontSize: 12,
-    color: Theme.colors.textMuted,
-  },
-  settingArrow: {
-    fontSize: 24,
-    color: Theme.colors.textMuted,
-  },
-  logoutButton: {
-    marginHorizontal: Theme.spacing.lg,
-    marginBottom: Theme.spacing.lg,
-    padding: Theme.spacing.md,
-    borderRadius: Theme.borderRadius.md,
-    borderWidth: 2,
-    borderColor: Theme.colors.error,
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+    paddingTop: Theme.spacing.md,
   },
-  logoutText: {
-    color: Theme.colors.error,
-    fontSize: 16,
+  activeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+  },
+  indicatorText: {
+    fontSize: 12,
+    color: '#10B981',
     fontWeight: '600',
   },
-  version: {
-    textAlign: 'center',
-    color: Theme.colors.textMuted,
+  tapToCopy: {
     fontSize: 12,
-    marginBottom: 40,
+    color: Theme.colors.textMuted,
+    fontStyle: 'italic',
+  },
+  networkScroll: {
+    marginHorizontal: -Theme.spacing.lg,
+    paddingHorizontal: Theme.spacing.lg,
+  },
+  networkCard: {
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.md,
+    borderRadius: Theme.borderRadius.md,
+    marginRight: Theme.spacing.md,
+    alignItems: 'center',
+    minWidth: 100,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  networkIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  networkName: {
+    color: Theme.colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  settingsGrid: {
+    gap: Theme.spacing.md,
+  },
+  modernSettingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.md,
+    borderRadius: Theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  settingIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Theme.spacing.md,
+  },
+  settingEmoji: {
+    fontSize: 18,
+  },
+  settingTextBox: {
+    flex: 1,
+  },
+  settingMainText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Theme.colors.text,
+  },
+  settingSubText: {
+    fontSize: 12,
+    color: Theme.colors.textMuted,
+    marginTop: 2,
+  },
+  chevron: {
+    fontSize: 20,
+    color: Theme.colors.textMuted,
+    marginLeft: Theme.spacing.sm,
+  },
+  footerActions: {
+    padding: Theme.spacing.xl,
+    alignItems: 'center',
+  },
+  logoutButtonModern: {
+    width: '100%',
+    height: 56,
+    borderRadius: Theme.borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+    marginBottom: Theme.spacing.lg,
+  },
+  logoutTextModern: {
+    color: '#EF4444',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  versionInfo: {
+    fontSize: 12,
+    color: Theme.colors.textMuted,
+    opacity: 0.5,
   },
 });

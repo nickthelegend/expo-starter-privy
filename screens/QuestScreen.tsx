@@ -64,15 +64,33 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
 
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Active Quests</Text>
-                    <View style={styles.questSummary}>
+                    <Text style={styles.headerTitle}>Quests</Text>
+
+                    {/* Launch Quest Hero */}
+                    <TouchableOpacity
+                        style={styles.launchHero}
+                        onPress={() => navigation.navigate('Scan')}
+                    >
                         <LinearGradient
-                            colors={['#6241E8', '#9333EA']}
-                            style={styles.summaryGradient}
+                            colors={Theme.gradients.primary as any}
+                            style={styles.launchGradient}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
                         >
-                            <Text style={styles.summaryCount}>{mockQuests.length}</Text>
-                            <Text style={styles.summaryLabel}>Quests Available</Text>
+                            <View style={styles.launchContent}>
+                                <View>
+                                    <Text style={styles.launchTitle}>Launch Nearby Quest</Text>
+                                    <Text style={styles.launchSubtitle}>Scan to discover hidden items</Text>
+                                </View>
+                                <View style={styles.launchButtonInner}>
+                                    <Text style={styles.launchIcon}>🚀</Text>
+                                </View>
+                            </View>
                         </LinearGradient>
+                    </TouchableOpacity>
+
+                    <View style={styles.sectionDivider}>
+                        <Text style={styles.sectionSubtitle}>Available Near You</Text>
                     </View>
                 </View>
 
@@ -124,32 +142,53 @@ const styles = StyleSheet.create({
         paddingTop: 60,
     },
     headerTitle: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: 'bold',
         color: Theme.colors.text,
         marginBottom: Theme.spacing.lg,
     },
-    questSummary: {
+    launchHero: {
         borderRadius: Theme.borderRadius.lg,
         overflow: 'hidden',
-        height: 120,
-        marginBottom: Theme.spacing.md,
+        marginBottom: Theme.spacing.xl,
+        ...Theme.shadows.glow,
     },
-    summaryGradient: {
-        flex: 1,
-        padding: Theme.spacing.lg,
+    launchGradient: {
+        padding: Theme.spacing.xl,
+    },
+    launchContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    launchTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: Theme.colors.text,
+        marginBottom: 4,
+    },
+    launchSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.7)',
+    },
+    launchButtonInner: {
+        width: 50,
+        height: 50,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    summaryCount: {
-        fontSize: 36,
-        fontWeight: 'bold',
-        color: Theme.colors.text,
+    launchIcon: {
+        fontSize: 24,
     },
-    summaryLabel: {
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.8)',
-        marginTop: 4,
+    sectionDivider: {
+        marginBottom: Theme.spacing.md,
+    },
+    sectionSubtitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: Theme.colors.textMuted,
     },
     questList: {
         paddingHorizontal: Theme.spacing.lg,
