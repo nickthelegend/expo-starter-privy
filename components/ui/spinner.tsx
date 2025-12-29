@@ -398,13 +398,13 @@ export function ButtonSpinner({
   variant = 'default',
   color,
 }: Omit<SpinnerProps, 'label' | 'showLabel'>) {
-  const primaryForegroundColor = useColor('primaryForeground');
+  const primaryColor = useColor('primary');
 
   return (
     <Spinner
       size={size}
       variant={variant}
-      color={color || primaryForegroundColor}
+      color={color || primaryColor}
       style={styles.buttonSpinner}
     />
   );

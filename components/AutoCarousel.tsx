@@ -42,7 +42,7 @@ export default function AutoCarousel({ data }: AutoCarouselProps) {
 
     // Auto-scroll logic
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: any;
 
         if (isAutoScrolling) {
             interval = setInterval(() => {
@@ -119,7 +119,7 @@ export default function AutoCarousel({ data }: AutoCarouselProps) {
                         <TouchableOpacity
                             key={quest.id}
                             activeOpacity={0.9}
-                            onPress={() => navigation.navigate('Scan')}
+                            onPress={() => navigation.navigate('Quests')}
                         >
                             <Animated.View style={[styles.questCard, { width: CARD_WIDTH, transform: [{ scale }] }]}>
                                 <View style={styles.questHeader}>

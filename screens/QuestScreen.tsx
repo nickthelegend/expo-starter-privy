@@ -9,6 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { SearchBar } from '@/components/ui/searchbar';
+import { Picker } from '@/components/ui/picker';
 
 const mockQuests = [
     {
@@ -21,6 +22,7 @@ const mockQuests = [
         description: 'Explore the heart of the city and discover hidden gems.',
         location: 'Central Plaza, Downtown',
         coordinate: { latitude: 37.78825, longitude: -122.4324 },
+        country: 'USA',
     },
     {
         id: '2',
@@ -32,6 +34,7 @@ const mockQuests = [
         description: 'A mysterious signal has been detected. Investigate the location to claim a rare artifact.',
         location: 'Old Lighthouse, Shoreline',
         coordinate: { latitude: 37.79025, longitude: -122.4344 },
+        country: 'UK',
     },
     {
         id: '3',
@@ -43,11 +46,22 @@ const mockQuests = [
         description: 'Help the local community by completing simple tasks.',
         location: 'Community Center, Eastside',
         coordinate: { latitude: 37.78625, longitude: -122.4304 },
+        country: 'UAE',
     },
 ];
 
 export default function QuestScreen({ navigation }: { navigation: any }) {
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCountry, setSelectedCountry] = useState('ALL');
+
+    const countries = [
+        { label: 'All Countries', value: 'ALL' },
+        { label: 'USA', value: 'USA' },
+        { label: 'UK', value: 'UK' },
+        { label: 'UAE', value: 'UAE' },
+        { label: 'India', value: 'India' },
+        { label: 'Canada', value: 'Canada' },
+    ];
 
     const getRarityColor = (rarity: string) => {
         switch (rarity) {
@@ -58,20 +72,19 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
         }
     };
 
-    // Filter quests based on search query
+    // Filter quests based on search query and country
     const filteredQuests = useMemo(() => {
-        if (!searchQuery.trim()) {
-            return mockQuests;
-        }
-        
-        return mockQuests.filter(quest => 
-            quest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            quest.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            quest.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            quest.rarity.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            quest.rewardType.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [searchQuery]);
+        return mockQuests.filter(quest => {
+            const matchesSearch = !searchQuery.trim() ||
+                quest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                quest.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                quest.location.toLowerCase().includes(searchQuery.toLowerCase());
+
+            const matchesCountry = selectedCountry === 'ALL' || quest.country === selectedCountry;
+
+            return matchesSearch && matchesCountry;
+        });
+    }, [searchQuery, selectedCountry]);
 
     const handleSearch = (query: string) => {
         setSearchQuery(query);
@@ -95,6 +108,15 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
                         containerStyle={styles.searchContainer}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
+                    />
+
+                    {/* Country Picker */}
+                    <Picker
+                        options={countries}
+                        value={selectedCountry}
+                        onValueChange={setSelectedCountry}
+                        placeholder='Filter by country...'
+                        style={{ marginBottom: Theme.spacing.lg }}
                     />
 
                     {/* Launch Quest Hero */}
@@ -122,7 +144,7 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
 
                     <View style={styles.sectionDivider}>
                         <Text style={styles.sectionSubtitle}>
-                            {searchQuery ? `Found ${filteredQuests.length} quest${filteredQuests.length !== 1 ? 's' : ''}` : 'Available Near You'}
+                            {searchQuery || selectedCountry !== 'ALL' ? `Found ${filteredQuests.length} quest${filteredQuests.length !== 1 ? 's' : ''}` : 'Available Near You'}
                         </Text>
                     </View>
                 </View>
@@ -130,33 +152,33 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
                 <View style={styles.questList}>
                     {filteredQuests.length > 0 ? (
                         filteredQuests.map((quest) => (
-                        <TouchableOpacity
-                            key={quest.id}
-                            style={styles.questCard}
-                            onPress={() => navigation.navigate('QuestDetail', { quest })}
-                        >
-                            <View
-                                style={[
-                                    styles.rarityBadge,
-                                    { backgroundColor: getRarityColor(quest.rarity) },
-                                ]}
+                            <TouchableOpacity
+                                key={quest.id}
+                                style={styles.questCard}
+                                onPress={() => navigation.navigate('QuestDetail', { quest })}
                             >
-                                <Text style={styles.rarityText}>{quest.rarity.toUpperCase()}</Text>
-                            </View>
-
-                            <Text style={styles.questName}>{quest.name}</Text>
-
-                            <View style={styles.questFooter}>
-                                <View>
-                                    <Text style={styles.rewardLabel}>Reward</Text>
-                                    <Text style={styles.rewardValue}>{quest.reward}</Text>
+                                <View
+                                    style={[
+                                        styles.rarityBadge,
+                                        { backgroundColor: getRarityColor(quest.rarity) },
+                                    ]}
+                                >
+                                    <Text style={styles.rarityText}>{quest.rarity.toUpperCase()}</Text>
                                 </View>
-                                <View style={styles.distanceBadge}>
-                                    <Text style={styles.distanceText}>📍 {quest.distance}</Text>
+
+                                <Text style={styles.questName}>{quest.name}</Text>
+
+                                <View style={styles.questFooter}>
+                                    <View>
+                                        <Text style={styles.rewardLabel}>Reward</Text>
+                                        <Text style={styles.rewardValue}>{quest.reward}</Text>
+                                    </View>
+                                    <View style={styles.distanceBadge}>
+                                        <Text style={styles.distanceText}>📍 {quest.distance}</Text>
+                                    </View>
                                 </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))
+                            </TouchableOpacity>
+                        ))
                     ) : (
                         <View style={styles.emptyState}>
                             <Text style={styles.emptyStateIcon}>🔍</Text>
