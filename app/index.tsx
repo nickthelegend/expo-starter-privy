@@ -1,4 +1,5 @@
-import { SafeAreaView, Text, View, ActivityIndicator } from "react-native";
+import { SafeAreaView, Text, View } from "react-native";
+import SplashScreen from "@/components/SplashScreen";
 import React, { useState, useEffect } from "react";
 import Constants from "expo-constants";
 import LoginScreen from "@/components/LoginScreen";
@@ -62,24 +63,12 @@ export default function Index() {
   }
 
   if (loading || !isReady) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: Theme.colors.background }}>
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <ActivityIndicator size="large" color={Theme.colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
+    return <SplashScreen />;
   }
 
   // Show onboarding if not completed
   if (!hasCompletedOnboarding) {
-    return <OnboardingScreen onComplete={() => {}} />;
+    return <OnboardingScreen onComplete={() => { }} />;
   }
 
   // Show login if no user
