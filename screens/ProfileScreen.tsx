@@ -36,6 +36,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           params: [{ chainId: id }],
         });
         console.log(`[NetworkSwitch] Success: result =`, result);
+        console.log(`${provider.toJSON()}`)
         Alert.alert('Success', `Chain switched successfully to ${id}`);
       } catch (e) {
         console.error(`[NetworkSwitch] Error:`, e);
@@ -193,6 +194,26 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                       Balance: {mantleBalance ? `${parseFloat(mantleBalance).toFixed(4)} MNT` : 'Loading...'}
                     </Text>
                   </View>
+                </View>
+                <View style={[styles.cardFooter, { borderTopWidth: 0, paddingTop: 0 }]}>
+                  <TouchableOpacity
+                    style={styles.switchMantleButton}
+                    onPress={async () => {
+                      if (wallets.length > 0) {
+                        const provider = await wallets[0].getProvider();
+                        switchChain(provider, '0x138b'); // 5003 is 0x138b
+                      } else {
+                        Alert.alert('Error', 'No embedded wallet found');
+                      }
+                    }}
+                  >
+                    <LinearGradient
+                      colors={Theme.gradients.primary as any}
+                      style={styles.switchMantleGradient}
+                    >
+                      <Text style={styles.switchMantleText}>Switch to Mantle</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.cardFooter}>
                   <View style={styles.activeIndicator}>
@@ -586,5 +607,22 @@ const styles = StyleSheet.create({
     color: '#7C3AED',
     fontSize: 10,
     fontWeight: '600',
+  },
+  switchMantleButton: {
+    width: '100%',
+    height: 44,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  switchMantleGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  switchMantleText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: Theme.typography.fontFamily.semiBold,
   },
 });

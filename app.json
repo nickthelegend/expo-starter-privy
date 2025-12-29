@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "@privy-io/expo-starter",
-    "slug": "expo-starter",
+    "name": "@nickthelegend/kyra",
+    "slug": "kyra",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -35,7 +35,11 @@
         "googleMaps": {
           "apiKey": "AIzaSyACn5LbHpFrDZrJ9pkg1OLc4EkntvcmNsA"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "extra": {
       "privyAppId": "cmc75u6a501xajs0mpi4fxpd5",
@@ -44,7 +48,11 @@
       "supabaseUrl": "https://phidvdsfmtetcsqwmfnv.supabase.co",
       "supabaseKey": "sb_publishable_3txPu7Wjj_vlawCZEUyV8Q_Cg8W7fOA",
       "backendUrl": "https://spin-rewards-21.preview.emergentagent.com",
-      "googleMapsApiKey": "AIzaSyACn5LbHpFrDZrJ9pkg1OLc4EkntvcmNsA"
+      "googleMapsApiKey": "AIzaSyACn5LbHpFrDZrJ9pkg1OLc4EkntvcmNsA",
+      "router": {},
+      "eas": {
+        "projectId": "36794ef4-0645-44e3-bd17-b8386168aabc"
+      }
     },
     "plugins": [
       "expo-router",
