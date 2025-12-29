@@ -21,6 +21,12 @@ export default function ScanScreen({ navigation }: ScanScreenProps) {
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+  }, [permission]);
+
   if (!permission) {
     return <View style={styles.container} />;
   }
@@ -40,7 +46,7 @@ export default function ScanScreen({ navigation }: ScanScreenProps) {
             data-testid="camera-permission-button"
           >
             <LinearGradient
-              colors={Theme.gradients.primary}
+              colors={Theme.gradients.primary as any}
               style={styles.buttonGradient}
             >
               <Text style={styles.buttonText}>Grant Permission</Text>

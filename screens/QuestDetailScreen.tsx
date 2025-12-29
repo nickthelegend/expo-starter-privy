@@ -3,17 +3,13 @@ import {
     View,
     Text,
     StyleSheet,
-    ScrollView,
     TouchableOpacity,
-    Dimensions,
-    SafeAreaView,
-    Image,
 } from 'react-native';
+import { ParallaxScrollView } from '@/components/ui/parallax-scrollview';
+import { Image } from 'expo-image';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
-
-const { width } = Dimensions.get('window');
 
 export default function QuestDetailScreen({ route, navigation }: { route: any, navigation: any }) {
     const { quest } = route.params;
@@ -27,31 +23,32 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
         }
     };
 
+    // Use a placeholder image for quests if not provided
+    const questImage = quest.image || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=800&q=80';
+
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#000000', '#0a0514', '#000000'] as any}
-                style={StyleSheet.absoluteFillObject}
-            />
-
-            <SafeAreaView style={{ flex: 1 }}>
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}
-                    >
-                        <Text style={styles.backButtonText}>← Back</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                    <View
-                        style={[
-                            styles.rarityBadge,
-                            { backgroundColor: getRarityColor(quest.rarity) },
-                        ]}
-                    >
-                        <Text style={styles.rarityText}>{quest.rarity.toUpperCase()}</Text>
+            <ParallaxScrollView
+                headerHeight={300}
+                headerImage={
+                    <Image
+                        source={{ uri: questImage }}
+                        style={{ width: '100%', height: '100%' }}
+                        contentFit='cover'
+                    />
+                }
+            >
+                <View style={styles.content}>
+                    <View style={styles.topInfo}>
+                        <View
+                            style={[
+                                styles.rarityBadge,
+                                { backgroundColor: getRarityColor(quest.rarity) },
+                            ]}
+                        >
+                            <Text style={styles.rarityText}>{quest.rarity.toUpperCase()}</Text>
+                        </View>
+                        <Text style={styles.distanceText}>📍 {quest.distance}</Text>
                     </View>
 
                     <Text style={styles.title}>{quest.name}</Text>
@@ -74,10 +71,9 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Location Information</Text>
                         <View style={styles.locationCard}>
-                            <Text style={styles.locationIcon}>📍</Text>
-                            <View>
+                            <View style={styles.locationInfoMain}>
                                 <Text style={styles.locationName}>{quest.location}</Text>
-                                <Text style={styles.distanceText}>{quest.distance} from your current location</Text>
+                                <Text style={styles.countryText}>{quest.country || 'Region Unknown'}</Text>
                             </View>
                         </View>
 
@@ -91,13 +87,12 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
                                     latitudeDelta: 0.005,
                                     longitudeDelta: 0.005,
                                 }}
-                                scrollEnabled={false}
-                                zoomEnabled={false}
+                                scrollEnabled={true}
+                                zoomEnabled={true}
                                 customMapStyle={[
                                     { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
                                     { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
                                     { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-                                    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
                                 ]}
                             >
                                 <Marker
@@ -109,7 +104,7 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
                                     <Image
                                         source={require('@/assets/images/treasure_chest.png')}
                                         style={{ width: 40, height: 40 }}
-                                        resizeMode="contain"
+                                        contentFit="contain"
                                     />
                                 </Marker>
                             </MapView>
@@ -127,9 +122,19 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
                             <Text style={styles.startButtonText}>Start Quest</Text>
                         </LinearGradient>
                     </TouchableOpacity>
-                </ScrollView>
-            </SafeAreaView>
-        </View >
+                </View>
+            </ParallaxScrollView>
+
+            {/* Floating Back Button */}
+            <TouchableOpacity
+                style={styles.floatingBackButton}
+                onPress={() => navigation.goBack()}
+            >
+                <View style={styles.backButtonInner}>
+                    <Text style={styles.backIcon}>←</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
     );
 }
 
@@ -138,33 +143,29 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Theme.colors.background,
     },
-    header: {
-        paddingHorizontal: Theme.spacing.lg,
-        paddingVertical: Theme.spacing.md,
-    },
-    backButton: {
-        paddingVertical: 8,
-    },
-    backButtonText: {
-        color: Theme.colors.text,
-        fontSize: 16,
-        fontFamily: Theme.typography.fontFamily.medium,
-    },
     content: {
-        paddingHorizontal: Theme.spacing.lg,
+        padding: Theme.spacing.md,
+    },
+    topInfo: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: Theme.spacing.md,
     },
     rarityBadge: {
-        alignSelf: 'flex-start',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 8,
-        marginTop: Theme.spacing.md,
-        marginBottom: Theme.spacing.md,
     },
     rarityText: {
         fontSize: 12,
         fontFamily: Theme.typography.fontFamily.semiBold,
         color: Theme.colors.text,
+    },
+    distanceText: {
+        fontSize: 14,
+        color: Theme.colors.textMuted,
+        fontFamily: Theme.typography.fontFamily.medium,
     },
     title: {
         fontSize: 32,
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
         marginBottom: Theme.spacing.xl,
     },
     rewardCard: {
-        padding: Theme.spacing.lg,
+        padding: Theme.spacing.md,
         borderRadius: Theme.borderRadius.lg,
         borderWidth: 1,
         borderColor: Theme.colors.border,
@@ -210,18 +211,28 @@ const styles = StyleSheet.create({
         fontFamily: Theme.typography.fontFamily.regular,
     },
     locationCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
         backgroundColor: Theme.colors.surface,
         padding: Theme.spacing.md,
         borderRadius: Theme.borderRadius.md,
         borderWidth: 1,
         borderColor: Theme.colors.border,
-        gap: Theme.spacing.md,
         marginBottom: Theme.spacing.md,
     },
+    locationInfoMain: {
+        gap: 2,
+    },
+    locationName: {
+        fontSize: 16,
+        fontFamily: Theme.typography.fontFamily.semiBold,
+        color: Theme.colors.text,
+    },
+    countryText: {
+        fontSize: 14,
+        color: Theme.colors.textMuted,
+        fontFamily: Theme.typography.fontFamily.regular,
+    },
     mapContainer: {
-        height: 150,
+        height: 200,
         borderRadius: Theme.borderRadius.md,
         overflow: 'hidden',
         borderWidth: 1,
@@ -230,20 +241,6 @@ const styles = StyleSheet.create({
     map: {
         width: '100%',
         height: '100%',
-    },
-    locationIcon: {
-        fontSize: 24,
-    },
-    locationName: {
-        fontSize: 16,
-        fontFamily: Theme.typography.fontFamily.semiBold,
-        color: Theme.colors.text,
-        marginBottom: 2,
-    },
-    distanceText: {
-        fontSize: 12,
-        color: Theme.colors.textMuted,
-        fontFamily: Theme.typography.fontFamily.regular,
     },
     startButton: {
         borderRadius: Theme.borderRadius.md,
@@ -259,5 +256,24 @@ const styles = StyleSheet.create({
         color: Theme.colors.text,
         fontSize: 18,
         fontFamily: Theme.typography.fontFamily.header,
+    },
+    floatingBackButton: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        zIndex: 10,
+    },
+    backButtonInner: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    backIcon: {
+        color: '#FFFFFF',
+        fontSize: 24,
+        fontWeight: 'bold',
     },
 });

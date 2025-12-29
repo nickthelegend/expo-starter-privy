@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
-        padding: Theme.spacing.lg,
+        padding: Theme.spacing.md,
         paddingTop: 60,
     },
     headerTitle: {
@@ -263,14 +263,14 @@ const styles = StyleSheet.create({
         color: Theme.colors.textMuted,
     },
     questList: {
-        paddingHorizontal: Theme.spacing.lg,
+        paddingHorizontal: Theme.spacing.md,
         paddingBottom: Theme.spacing.xl,
         gap: Theme.spacing.md,
     },
     questCard: {
         backgroundColor: Theme.colors.surface,
         borderRadius: Theme.borderRadius.lg,
-        padding: Theme.spacing.lg,
+        padding: Theme.spacing.md,
         borderWidth: 1,
         borderColor: Theme.colors.border,
     },
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     emptyState: {
         alignItems: 'center',
         paddingVertical: Theme.spacing.xl * 2,
-        paddingHorizontal: Theme.spacing.lg,
+        paddingHorizontal: Theme.spacing.md,
     },
     emptyStateIcon: {
         fontSize: 48,

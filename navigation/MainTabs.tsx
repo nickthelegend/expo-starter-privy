@@ -32,12 +32,20 @@ const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
 
   if (!IconComponent) return null;
 
+  // Use a different color logic for the centered Scan button
+  const iconColor = name === 'Scan'
+    ? "#FFFFFF"
+    : (focused ? Theme.colors.primary : "#FFFFFF");
+
   return (
-    <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
+    <View style={[
+      styles.iconContainer,
+      focused && name !== 'Scan' && styles.iconContainerActive
+    ]}>
       <IconComponent
         width={24}
         height={24}
-        fill={focused ? Theme.colors.primary : "#FFFFFF"}
+        fill={iconColor}
       />
     </View>
   );
