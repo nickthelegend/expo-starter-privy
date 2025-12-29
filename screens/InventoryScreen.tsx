@@ -6,14 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { GalleryItem } from '@/components/ui/gallery';
-import { InventoryGallery } from '@/components/ui/inventory-gallery';
+import { InventoryGalleryEnhanced } from '@/components/ui/inventory-gallery-enhanced';
 
 export default function InventoryScreen() {
   const { userStats } = useAppStore();
@@ -258,7 +257,7 @@ export default function InventoryScreen() {
         {/* Gallery */}
         <View style={styles.galleryContainer}>
           {galleryItems.length > 0 ? (
-            <InventoryGallery
+            <InventoryGalleryEnhanced
               items={galleryItems}
               inventoryItems={filteredInventory}
               columns={2}
@@ -270,11 +269,8 @@ export default function InventoryScreen() {
               showPages={true}
               enableFullscreen={true}
               enableZoom={true}
-              enableDownload={true}
               enableShare={true}
-              onDownload={handleExplorer}
               onShare={handleShare}
-              onExplorer={undefined}
               renderCustomOverlay={renderItemOverlay}
             />
           ) : (
