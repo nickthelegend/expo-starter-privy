@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -64,6 +65,15 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         colors={['#000000', '#181121', '#000000']}
         style={StyleSheet.absoluteFillObject}
       />
+
+      {/* Logo at the top */}
+      <View style={styles.logoContainer}>
+        <Image 
+          source={require('@/assets/images/icon-logo-text.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
+      </View>
 
       <TouchableOpacity
         style={styles.skipButton}
@@ -144,6 +154,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Theme.colors.background,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  logoImage: {
+    width: 160,
+    height: 50,
   },
   skipButton: {
     position: 'absolute',

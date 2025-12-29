@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Theme } from "@/constants/Theme";
@@ -15,13 +15,11 @@ export default function LoginScreen() {
       <View style={styles.content}>
         {/* Logo/Brand */}
         <View style={styles.logoContainer}>
-          <LinearGradient
-            colors={Theme.gradients.primary}
-            style={styles.logoGradient}
-          >
-            <Text style={styles.logoText}>KQ</Text>
-          </LinearGradient>
-          <Text style={styles.appName}>KyraQuest</Text>
+          <Image 
+            source={require('@/assets/images/icon-logo-text.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.tagline}>Explore. Scan. Earn.</Text>
         </View>
 
@@ -53,25 +51,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 60,
   },
-  logoGradient: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoImage: {
+    width: 200,
+    height: 80,
     marginBottom: Theme.spacing.lg,
-    ...Theme.shadows.glow,
-  },
-  logoText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: Theme.colors.text,
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: Theme.colors.text,
-    marginBottom: Theme.spacing.xs,
   },
   tagline: {
     fontSize: 16,

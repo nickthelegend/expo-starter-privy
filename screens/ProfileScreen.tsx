@@ -17,6 +17,8 @@ interface ProfileScreenProps {
   navigation: any;
 }
 
+import { useWalletAvatar } from '@/hooks/useWalletAvatar';
+
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { user, logout } = usePrivy();
   const { wallets } = useEmbeddedEthereumWallet();
@@ -112,7 +114,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                 <View style={styles.avatarInner}>
                   {wallet?.address ? (
                     <Image
-                      source={{ uri: `https://api.dicebear.com/7.x/identicon/png?seed=${wallet.address}` }}
+                      source={{ uri: useWalletAvatar(wallet.address) || undefined }}
                       style={styles.avatarImage}
                     />
                   ) : (user as any)?.linked_accounts?.[0]?.picture ? (

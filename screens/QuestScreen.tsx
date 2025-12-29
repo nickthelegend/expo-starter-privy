@@ -1,16 +1,14 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
-
-const { width } = Dimensions.get('window');
+import { SearchBar } from '@/components/ui/searchbar';
 
 const mockQuests = [
     {
@@ -49,6 +47,8 @@ const mockQuests = [
 ];
 
 export default function QuestScreen({ navigation }: { navigation: any }) {
+    const [searchQuery, setSearchQuery] = useState('');
+
     const getRarityColor = (rarity: string) => {
         switch (rarity) {
             case 'legendary': return '#FFD700';
@@ -56,6 +56,25 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
             case 'rare': return '#3B82F6';
             default: return '#6B7280';
         }
+    };
+
+    // Filter quests based on search query
+    const filteredQuests = useMemo(() => {
+        if (!searchQuery.trim()) {
+            return mockQuests;
+        }
+        
+        return mockQuests.filter(quest => 
+            quest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            quest.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            quest.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            quest.rarity.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            quest.rewardType.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [searchQuery]);
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
     };
 
     return (
@@ -68,6 +87,15 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Quests</Text>
+
+                    {/* Search Bar */}
+                    <SearchBar
+                        placeholder="Search quests, locations, rewards..."
+                        onSearch={handleSearch}
+                        containerStyle={styles.searchContainer}
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                    />
 
                     {/* Launch Quest Hero */}
                     <TouchableOpacity
@@ -93,12 +121,15 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
                     </TouchableOpacity>
 
                     <View style={styles.sectionDivider}>
-                        <Text style={styles.sectionSubtitle}>Available Near You</Text>
+                        <Text style={styles.sectionSubtitle}>
+                            {searchQuery ? `Found ${filteredQuests.length} quest${filteredQuests.length !== 1 ? 's' : ''}` : 'Available Near You'}
+                        </Text>
                     </View>
                 </View>
 
                 <View style={styles.questList}>
-                    {mockQuests.map((quest) => (
+                    {filteredQuests.length > 0 ? (
+                        filteredQuests.map((quest) => (
                         <TouchableOpacity
                             key={quest.id}
                             style={styles.questCard}
@@ -125,7 +156,16 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
                                 </View>
                             </View>
                         </TouchableOpacity>
-                    ))}
+                    ))
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <Text style={styles.emptyStateIcon}>🔍</Text>
+                            <Text style={styles.emptyStateTitle}>No quests found</Text>
+                            <Text style={styles.emptyStateText}>
+                                Try adjusting your search terms or explore different areas
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </ScrollView>
         </View>
@@ -149,6 +189,12 @@ const styles = StyleSheet.create({
         fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.text,
         marginBottom: Theme.spacing.lg,
+    },
+    searchContainer: {
+        marginBottom: Theme.spacing.lg,
+        backgroundColor: Theme.colors.surface,
+        borderWidth: 1,
+        borderColor: Theme.colors.border,
     },
     launchHero: {
         borderRadius: Theme.borderRadius.lg,
@@ -248,5 +294,27 @@ const styles = StyleSheet.create({
     distanceText: {
         fontSize: 14,
         color: Theme.colors.textMuted,
+    },
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: Theme.spacing.xl * 2,
+        paddingHorizontal: Theme.spacing.lg,
+    },
+    emptyStateIcon: {
+        fontSize: 48,
+        marginBottom: Theme.spacing.lg,
+    },
+    emptyStateTitle: {
+        fontSize: 20,
+        fontFamily: Theme.typography.fontFamily.header,
+        color: Theme.colors.text,
+        marginBottom: Theme.spacing.sm,
+        textAlign: 'center',
+    },
+    emptyStateText: {
+        fontSize: 16,
+        color: Theme.colors.textMuted,
+        textAlign: 'center',
+        lineHeight: 24,
     },
 });

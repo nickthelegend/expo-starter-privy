@@ -13,7 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import QRCode from 'react-native-qrcode-styled';
 import { Theme } from '@/constants/Theme';
-import { useEmbeddedEthereumWallet } from '@privy-io/expo';
+import { usePrivy, useEmbeddedEthereumWallet, getUserEmbeddedEthereumWallet } from '@privy-io/expo';
 import { createPublicClient, http, formatEther, parseEther } from 'viem';
 import { mantleSepoliaTestnet } from 'viem/chains';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,8 +24,13 @@ const MANTLE_RPC_URL = "https://mantle-sepolia.g.alchemy.com/v2/3qRB0TMQQv3hyKga
 
 export default function WalletDetailScreen() {
     const navigation = useNavigation();
+    const { user } = usePrivy();
     const { wallets, ready } = useEmbeddedEthereumWallet();
-    const wallet = wallets.find(w => w.chain_type === 'ethereum');
+
+    // robust wallet detection
+    const embeddedWallet = getUserEmbeddedEthereumWallet(user);
+    const externalWallet = (user as any)?.wallet;
+    const wallet = embeddedWallet || externalWallet || wallets.find(w => w.chain_type === 'ethereum');
 
     const [balance, setBalance] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
