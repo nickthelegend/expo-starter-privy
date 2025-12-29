@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Theme } from '@/constants/Theme';
 import HomeScreen from '@/screens/HomeScreen';
@@ -80,11 +80,15 @@ export default function MainTabs() {
         options={{
           tabBarIcon: ({ focused }) => <TabBarIcon name="Scan" focused={focused} />,
           tabBarButton: (props) => (
-            <View {...(props as any)} style={[props.style, styles.scanButtonContainer]}>
+            <TouchableOpacity
+              {...(props as any)}
+              style={[props.style, styles.scanButtonContainer]}
+              activeOpacity={0.8}
+            >
               <View style={styles.scanButton}>
                 {props.children}
               </View>
-            </View>
+            </TouchableOpacity>
           ),
         }}
       />
