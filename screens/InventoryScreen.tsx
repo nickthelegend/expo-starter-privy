@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
-  ImageBackground,
+  Alert,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
-// import { BlurView } from 'expo-blur'; // Unused, removing to avoid dependency issues
-
-const { width } = Dimensions.get('window');
-const ITEM_SIZE = (width - 48 - Theme.spacing.md) / 2;
+import { GalleryItem } from '@/components/ui/gallery';
+import { InventoryGallery } from '@/components/ui/inventory-gallery';
 
 export default function InventoryScreen() {
   const { userStats } = useAppStore();
@@ -28,16 +26,18 @@ export default function InventoryScreen() {
       name: 'Pioneer Badge',
       image: '🏆',
       rarity: 'legendary',
-      description: 'Awarded to early explorers.',
+      description: 'Awarded to early explorers who discovered the first hidden quests.',
+      contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
     },
     {
       id: '2',
       type: 'TOKEN' as const,
-      name: 'MNT Token',
+      name: 'KYRA Token',
       amount: 250,
       image: '🪙',
       rarity: 'common',
-      description: 'Native currency of Mantle.',
+      description: 'Native currency of KyraQuest. Use to unlock premium features.',
+      contractAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
     },
     {
       id: '3',
@@ -45,7 +45,8 @@ export default function InventoryScreen() {
       name: 'Mystery Box',
       image: '🎁',
       rarity: 'epic',
-      description: 'Contains a surprise reward.',
+      description: 'Contains a surprise reward. Open to discover rare items and bonuses.',
+      contractAddress: '0x9876543210fedcba9876543210fedcba98765432',
     },
     {
       id: '4',
@@ -54,7 +55,8 @@ export default function InventoryScreen() {
       amount: 1,
       image: '🧪',
       rarity: 'rare',
-      description: 'Boosts your XP gain by 10%.',
+      description: 'Boosts your XP gain by 10% for the next 24 hours.',
+      contractAddress: '0xfedcba9876543210fedcba9876543210fedcba98',
     },
     {
       id: '5',
@@ -62,7 +64,36 @@ export default function InventoryScreen() {
       name: 'Golden Key',
       image: '🔑',
       rarity: 'rare',
-      description: 'Unlocks special quests.'
+      description: 'Unlocks special legendary quests with exclusive rewards.',
+      contractAddress: '0x1111222233334444555566667777888899990000',
+    },
+    {
+      id: '6',
+      type: 'NFT' as const,
+      name: 'Dragon Egg',
+      image: '🥚',
+      rarity: 'legendary',
+      description: 'A mysterious egg that may hatch into something extraordinary.',
+      contractAddress: '0xaaaa1111bbbb2222cccc3333dddd4444eeee5555',
+    },
+    {
+      id: '7',
+      type: 'TOKEN' as const,
+      name: 'Energy Crystal',
+      amount: 5,
+      image: '💎',
+      rarity: 'epic',
+      description: 'Restores quest energy instantly. Perfect for marathon quest sessions.',
+      contractAddress: '0x5555eeee4444dddd3333cccc2222bbbb1111aaaa',
+    },
+    {
+      id: '8',
+      type: 'NFT' as const,
+      name: 'Explorer Badge',
+      image: '🗺️',
+      rarity: 'common',
+      description: 'Shows your dedication to exploration and discovery.',
+      contractAddress: '0x0000999988887777666655554444333322221111',
     }
   ];
 
@@ -70,13 +101,106 @@ export default function InventoryScreen() {
     ? mockInventory
     : mockInventory.filter(item => item.type === filter);
 
-  const getRarityColors = (rarity: string) => {
-    switch (rarity) {
-      case 'legendary': return ['#FFD700', '#FFA500'];
-      case 'epic': return ['#D946EF', '#9333EA'];
-      case 'rare': return ['#3B82F6', '#2563EB'];
-      default: return ['#9CA3AF', '#4B5563'];
+  // Transform inventory items to gallery items
+  const galleryItems: GalleryItem[] = useMemo(() => {
+    return filteredInventory.map((item, index) => ({
+      id: item.id,
+      uri: `https://api.dicebear.com/7.x/shapes/png?seed=${item.name}&backgroundColor=6241E8,795CEB,9333EA&size=400`,
+      title: item.name,
+      description: `${item.rarity.toUpperCase()} • ${item.description}${item.type === 'TOKEN' ? ` • Quantity: ${item.amount}` : ''} • Contract: ${item.contractAddress}`,
+      thumbnail: `https://api.dicebear.com/7.x/shapes/png?seed=${item.name}&backgroundColor=6241E8,795CEB,9333EA&size=200`
+    }));
+  }, [filteredInventory]);
+
+  // Share handler
+  const handleShare = (galleryItem: GalleryItem) => {
+    const index = galleryItems.findIndex(item => item.id === galleryItem.id);
+    const inventoryItem = filteredInventory[index];
+    
+    if (inventoryItem) {
+      Alert.alert(
+        'Share Item',
+        `Share ${inventoryItem.name}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Share', 
+            onPress: () => {
+              // Here you would implement actual sharing logic
+              console.log('Sharing:', inventoryItem.name);
+              Alert.alert('Shared!', `${inventoryItem.name} has been shared successfully.`);
+            }
+          }
+        ]
+      );
     }
+  };
+
+  // Explorer handler (using download button in fullscreen)
+  const handleExplorer = (galleryItem: GalleryItem) => {
+    const index = galleryItems.findIndex(item => item.id === galleryItem.id);
+    const inventoryItem = filteredInventory[index];
+    
+    if (inventoryItem?.contractAddress) {
+      const explorerUrl = `https://sepolia.mantlescan.xyz/address/${inventoryItem.contractAddress}`;
+      
+      Alert.alert(
+        'View in Explorer',
+        `Open ${inventoryItem.name} contract in Mantle Explorer?\n\nContract: ${inventoryItem.contractAddress}`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Open Explorer', 
+            onPress: () => {
+              Linking.openURL(explorerUrl).catch(() => {
+                Alert.alert('Error', 'Could not open explorer link');
+              });
+            }
+          }
+        ]
+      );
+    }
+  };
+
+  // Helper function to get rarity colors
+  const getRarityColor = (rarity: string) => {
+    switch (rarity) {
+      case 'legendary': return '#FFD700';
+      case 'epic': return '#9333EA';
+      case 'rare': return '#3B82F6';
+      default: return '#6B7280';
+    }
+  };
+
+  // Custom overlay renderer for inventory items
+  const renderItemOverlay = (item: GalleryItem, index: number, inventoryItem: any) => {
+    if (!inventoryItem) return null;
+
+    return (
+      <View style={styles.itemOverlay}>
+        {/* Rarity Badge */}
+        <View style={[
+          styles.rarityBadge,
+          { backgroundColor: getRarityColor(inventoryItem.rarity) }
+        ]}>
+          <Text style={styles.rarityText}>
+            {inventoryItem.rarity.toUpperCase()}
+          </Text>
+        </View>
+
+        {/* Token Amount Badge */}
+        {inventoryItem.type === 'TOKEN' && (
+          <View style={styles.amountBadge}>
+            <Text style={styles.amountText}>x{inventoryItem.amount}</Text>
+          </View>
+        )}
+
+        {/* Type Badge */}
+        <View style={styles.typeBadge}>
+          <Text style={styles.typeText}>{inventoryItem.type}</Text>
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -131,52 +255,38 @@ export default function InventoryScreen() {
           ))}
         </View>
 
-        {/* Inventory Grid */}
-        <View style={styles.grid}>
-          {filteredInventory.map((item) => {
-            const colors = getRarityColors(item.rarity);
-            return (
-              <TouchableOpacity key={item.id} style={styles.cardContainer}>
-                <LinearGradient
-                  colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']}
-                  style={styles.card}
-                >
-                  {/* Rarity Border Top */}
-                  <LinearGradient
-                    colors={colors}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={{ height: 2, width: '100%', opacity: 0.8 }}
-                  />
-
-                  <View style={styles.cardContent}>
-                    <View style={[styles.iconContainer, { shadowColor: colors[0] }]}>
-                      <Text style={styles.itemEmoji}>{item.image}</Text>
-                    </View>
-
-                    <View style={styles.itemMeta}>
-                      <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-                      <Text style={styles.itemRarity}>{item.rarity.toUpperCase()}</Text>
-                    </View>
-
-                    {item.type === 'TOKEN' && (
-                      <View style={styles.amountBadge}>
-                        <Text style={styles.amountText}>x{item.amount}</Text>
-                      </View>
-                    )}
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            );
-          })}
+        {/* Gallery */}
+        <View style={styles.galleryContainer}>
+          {galleryItems.length > 0 ? (
+            <InventoryGallery
+              items={galleryItems}
+              inventoryItems={filteredInventory}
+              columns={2}
+              spacing={6}
+              aspectRatio={1.2}
+              borderRadius={Theme.borderRadius.lg}
+              showTitles={true}
+              showDescriptions={false}
+              showPages={true}
+              enableFullscreen={true}
+              enableZoom={true}
+              enableDownload={true}
+              enableShare={true}
+              onDownload={handleExplorer}
+              onShare={handleShare}
+              onExplorer={undefined}
+              renderCustomOverlay={renderItemOverlay}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="cube-outline" size={64} color="rgba(255,255,255,0.2)" />
+              <Text style={styles.emptyText}>No items found</Text>
+              <Text style={styles.emptySubtext}>
+                Complete quests to earn rewards and build your collection
+              </Text>
+            </View>
+          )}
         </View>
-
-        {filteredInventory.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons name="cube-outline" size={64} color="rgba(255,255,255,0.2)" />
-            <Text style={styles.emptyText}>No items found</Text>
-          </View>
-        )}
       </ScrollView>
     </View>
   );
@@ -247,85 +357,90 @@ const styles = StyleSheet.create({
   filterTextActive: {
     color: 'black',
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 20,
-    gap: Theme.spacing.md,
-  },
-  cardContainer: {
-    width: ITEM_SIZE,
-    marginBottom: Theme.spacing.md,
-  },
-  card: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    height: 180,
-  },
-  cardContent: {
-    padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  galleryContainer: {
     flex: 1,
-  },
-  iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  itemEmoji: {
-    fontSize: 32,
-  },
-  itemMeta: {
-    alignItems: 'center',
-  },
-  itemName: {
-    color: 'white',
-    fontSize: 14,
-    fontFamily: Theme.typography.fontFamily.semiBold,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  itemRarity: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  amountBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  amountText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
+    paddingHorizontal: 12,
+    paddingBottom: Theme.spacing.xl,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 60,
     opacity: 0.5,
+    paddingHorizontal: Theme.spacing.lg,
   },
   emptyText: {
     color: 'white',
     marginTop: 16,
-    fontSize: 16,
+    fontSize: 18,
+    fontFamily: Theme.typography.fontFamily.semiBold,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 8,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  // Overlay styles
+  itemOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'space-between',
+    padding: 8,
+  },
+  rarityBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  rarityText: {
+    fontSize: 10,
+    fontFamily: Theme.typography.fontFamily.semiBold,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  amountBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  amountText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: Theme.typography.fontFamily.semiBold,
+    fontWeight: 'bold',
+  },
+  typeBadge: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  typeText: {
+    fontSize: 10,
+    color: '#FFFFFF',
+    fontFamily: Theme.typography.fontFamily.medium,
+    fontWeight: '600',
   },
 });
 

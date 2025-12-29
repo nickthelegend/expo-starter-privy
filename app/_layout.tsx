@@ -15,6 +15,7 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { mantleSepolia } from "@/constants/Chains";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 import { base, mainnet, optimism, arbitrum, polygon, mantleSepoliaTestnet } from "viem/chains";
@@ -35,30 +36,32 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <PrivyProvider
-      appId={Constants.expoConfig?.extra?.privyAppId}
-      clientId={Constants.expoConfig?.extra?.privyClientId}
-      supportedChains={[
-        base,
-        mainnet,
-        optimism,
-        arbitrum,
-        polygon,
-        mantleSepoliaTestnet,
-      ]}
-      config={{
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PrivyProvider
+        appId={Constants.expoConfig?.extra?.privyAppId}
+        clientId={Constants.expoConfig?.extra?.privyClientId}
+        supportedChains={[
+          base,
+          mainnet,
+          optimism,
+          arbitrum,
+          polygon,
+          mantleSepoliaTestnet,
+        ]}
+        config={{
 
-        embedded: {
-          ethereum: {
-            createOnLogin: 'all-users',
+          embedded: {
+            ethereum: {
+              createOnLogin: 'all-users',
+            },
           },
-        },
-      }}
-    >
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-      </Stack>
-      <PrivyElements />
-    </PrivyProvider>
+        }}
+      >
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+        </Stack>
+        <PrivyElements />
+      </PrivyProvider>
+    </GestureHandlerRootView>
   );
 }
