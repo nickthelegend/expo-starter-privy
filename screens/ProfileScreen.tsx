@@ -9,6 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Theme } from '@/constants/Theme';
 import { usePrivy, getUserEmbeddedEthereumWallet, useEmbeddedEthereumWallet, PrivyEmbeddedWalletProvider } from '@privy-io/expo';
 import { base, mainnet, optimism, arbitrum, polygon, mantleSepoliaTestnet } from "viem/chains";
@@ -26,9 +27,18 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const externalWallet = (user as any)?.wallet;
   const wallet = embeddedWallet || externalWallet;
   const walletType = embeddedWallet ? 'Embedded Wallet' : 'External Wallet';
+  const [networkName, setNetworkName] = React.useState<string>('Unset');
+
+  React.useEffect(() => {
+    const loadNetwork = async () => {
+      const saved = await AsyncStorage.getItem('kyra_network');
+      if (saved) setNetworkName(saved);
+    };
+    loadNetwork();
+  }, []);
 
   const switchChain = useCallback(
-    async (provider: PrivyEmbeddedWalletProvider, id: string) => {
+    async (provider: PrivyEmbeddedWalletProvider, id: string, name?: string) => {
       try {
         console.log(`[NetworkSwitch] Requesting switch to chainId: ${id}`);
         const result = await provider.request({
@@ -36,8 +46,16 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           params: [{ chainId: id }],
         });
         console.log(`[NetworkSwitch] Success: result =`, result);
-        console.log(`${provider.toJSON()}`)
-        Alert.alert('Success', `Chain switched successfully to ${id}`);
+
+        if (id === '0x138b' || name?.includes('Mantle')) {
+          await AsyncStorage.setItem('kyra_network', 'Sepolia testnet');
+          setNetworkName('Sepolia testnet');
+        } else if (name) {
+          await AsyncStorage.setItem('kyra_network', name);
+          setNetworkName(name);
+        }
+
+        Alert.alert('Success', `Chain switched successfully to ${name || id}`);
       } catch (e) {
         console.error(`[NetworkSwitch] Error:`, e);
         Alert.alert('Error', 'Failed to switch chain');
@@ -184,7 +202,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Text style={styles.walletTypeLabel}>{walletType}</Text>
                       <View style={styles.networkBadge}>
-                        <Text style={styles.networkText}>Mantle L2</Text>
+                        <Text style={styles.networkText}>Network: {networkName}</Text>
                       </View>
                     </View>
                     <Text style={styles.walletAddressText} numberOfLines={1}>
@@ -201,7 +219,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                     onPress={async () => {
                       if (wallets.length > 0) {
                         const provider = await wallets[0].getProvider();
-                        switchChain(provider, '0x138b'); // 5003 is 0x138b
+                        switchChain(provider, '0x138b', 'Sepolia testnet'); // 5003 is 0x138b
                       } else {
                         Alert.alert('Error', 'No embedded wallet found');
                       }
@@ -245,7 +263,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                 onPress={async () => {
                   if (wallets.length > 0) {
                     const provider = await wallets[0].getProvider();
-                    switchChain(provider, `0x${chain.id.toString(16)}`);
+                    switchChain(provider, `0x${chain.id.toString(16)}`, chain.name);
                   } else {
                     Alert.alert('Error', 'No embedded wallet found');
                   }

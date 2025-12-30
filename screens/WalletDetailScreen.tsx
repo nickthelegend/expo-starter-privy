@@ -25,12 +25,20 @@ const MANTLE_RPC_URL = "https://mantle-sepolia.g.alchemy.com/v2/3qRB0TMQQv3hyKga
 export default function WalletDetailScreen() {
     const navigation = useNavigation();
     const { user } = usePrivy();
-    const { wallets, ready } = useEmbeddedEthereumWallet();
+    const { wallets } = useEmbeddedEthereumWallet();
 
     // robust wallet detection
     const embeddedWallet = getUserEmbeddedEthereumWallet(user);
     const externalWallet = (user as any)?.wallet;
-    const wallet = embeddedWallet || externalWallet || wallets.find(w => w.chain_type === 'ethereum');
+    const wallet = embeddedWallet || externalWallet || wallets.find(w => w.chainType === 'ethereum');
+
+    console.log('[WalletDetail] Debug Info:', {
+        hasUser: !!user,
+        walletsCount: wallets.length,
+        hasEmbedded: !!embeddedWallet,
+        hasExternal: !!externalWallet,
+        resolvedWallet: wallet?.address
+    });
 
     const [balance, setBalance] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
@@ -89,7 +97,7 @@ export default function WalletDetailScreen() {
         }
     };
 
-    if (!ready || !wallet) {
+    if (!wallet) {
         return (
             <View style={styles.container}>
                 <LinearGradient
