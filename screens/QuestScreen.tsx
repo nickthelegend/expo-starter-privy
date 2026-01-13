@@ -189,7 +189,6 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
                                 </Text>
                             </View>
 
-                        </View>
                 </>
                     ) : null}
         </View>

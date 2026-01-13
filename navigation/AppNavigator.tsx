@@ -8,6 +8,7 @@ import LaunchScreen from '@/screens/LaunchScreen';
 import LeaderboardScreen from '@/screens/LeaderboardScreen';
 import QMapScreen from '@/screens/QMapScreen';
 import WalletDetailScreen from '@/screens/WalletDetailScreen';
+import UploadScreen from '@/screens/UploadScreen';
 
 const Stack = createNativeStackNavigator();
 
