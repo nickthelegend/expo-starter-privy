@@ -29,6 +29,49 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const scrollX = useRef(new Animated.Value(0)).current;
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [earnedReward, setEarnedReward] = useState<{ type: 'XP' | 'TOKEN' | 'NFT', amount?: number, name: string }>({ type: 'XP', amount: 10, name: 'Daily Check-in' });
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [activeSeason, setActiveSeason] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      const { supabase } = await import('@/lib/supabase');
+
+      // 1. Get Active Season
+      const { data: season } = await supabase
+        .from('seasons')
+        .select('*')
+        .eq('is_active', true)
+        .single();
+
+      if (season) setActiveSeason(season);
+
+      // 2. Get Stats for Season
+      // Ideally join players, but for now just raw stats or if we have players table
+      // If "season_stats" is empty (new season), we might show "No data"
+      let query = supabase
+        .from('season_stats')
+        .select('*, player_wallet')
+        .order('total_xp', { ascending: false })
+        .limit(10);
+
+      if (season) {
+        query = query.eq('season_id', season.id);
+      }
+
+      const { data: stats } = await query;
+      if (stats && stats.length > 0) {
+        setLeaderboard(stats);
+      } else {
+        // Fallback: If no season stats yet, just show 'players' sorted by high score if you have a legacy table, 
+        // OR just show empty state. Let's show empty state or mock if completely empty for demo?
+        // For demo purposes, if empty, we might keep the "mock" data? 
+        // No, user asked for "Leaderboard Seasons", so let's try to be real.
+        // But if I just created the table, it IS empty.
+        // So I should probably insert some dummy data if empty so the UI doesn't look broken.
+      }
+    };
+    fetchLeaderboard();
+  }, []);
 
   const mockQuests = [
     {
@@ -148,25 +191,41 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         {/* Quest Fast Finish Leaderboard */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Fastest Finishers</Text>
+            <Text style={styles.sectionTitle}>
+              {activeSeason ? activeSeason.name : "Global Leaderboard"}
+            </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Leaderboard')}>
               <Text style={styles.seeAll}>See all</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.leaderboardContainer}>
-            {[
-              { id: '1', name: 'CryptoKnight', time: '12m 30s', rank: 1, avatar: '🥇' },
-              { id: '2', name: 'MantleMaster', time: '14m 45s', rank: 2, avatar: '🥈' },
-              { id: '3', name: 'Web3Wanderer', time: '18m 10s', rank: 3, avatar: '🥉' },
-            ].map((user, index) => (
-              <View key={user.id} style={styles.leaderboardItem}>
-                <View style={styles.leaderboardLeft}>
-                  <Text style={styles.rankText}>{user.avatar}</Text>
-                  <Text style={styles.leaderboardName}>{user.name}</Text>
-                </View>
-                <Text style={styles.leaderboardTime}>{user.time}</Text>
-              </View>
-            ))}
+            {leaderboard.length === 0 ? (
+              <Text style={{ color: Theme.colors.textMuted, padding: 20, textAlign: 'center' }}>
+                No data for this season yet. Be the first!
+              </Text>
+            ) : (
+              leaderboard.slice(0, 3).map((player, index) => {
+                let rankIcon = '👏';
+                if (index === 0) rankIcon = '🥇';
+                if (index === 1) rankIcon = '🥈';
+                if (index === 2) rankIcon = '🥉';
+
+                return (
+                  <View key={player.id || index} style={styles.leaderboardItem}>
+                    <View style={styles.leaderboardLeft}>
+                      <Text style={styles.rankText}>{rankIcon}</Text>
+                      <Text style={styles.leaderboardName}>
+                        {player.player_wallet
+                          ? `...${player.player_wallet.slice(-4)}`
+                          : `Explorer ${index + 1}`
+                        }
+                      </Text>
+                    </View>
+                    <Text style={styles.leaderboardTime}>{player.total_xp} XP</Text>
+                  </View>
+                );
+              })
+            )}
           </View>
         </View>
 

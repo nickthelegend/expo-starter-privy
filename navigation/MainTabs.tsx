@@ -1,22 +1,21 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Theme } from '@/constants/Theme';
 import HomeScreen from '@/screens/HomeScreen';
-import MapScreen from '@/screens/MapScreen';
 import ScanScreen from '@/screens/ScanScreen';
-import InventoryScreen from '@/screens/InventoryScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
 import QuestScreen from '@/screens/QuestScreen';
+import FeedScreen from '@/screens/FeedScreen';
 
 // SVG Icons
 import {
   HomeIcon,
   QuestsIcon,
   ScanIcon,
-  InventoryIcon,
-  ProfileIcon
+  ProfileIcon,
+  FeedIcon
 } from '@/components/TabIcons';
 
 const Tab = createBottomTabNavigator();
@@ -25,22 +24,23 @@ const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
   const IconComponent = {
     Home: HomeIcon,
     Quests: QuestsIcon,
+    Feed: FeedIcon,
     Scan: ScanIcon,
-    Inventory: InventoryIcon,
     Profile: ProfileIcon,
   }[name];
 
   if (!IconComponent) return null;
 
-  // Use a different color logic for the centered Scan button
-  const iconColor = name === 'Scan'
+  // Center button highlighting (Feed)
+  const isCenter = name === 'Feed';
+  const iconColor = isCenter
     ? "#FFFFFF"
     : (focused ? Theme.colors.primary : "#FFFFFF");
 
   return (
     <View style={[
       styles.iconContainer,
-      focused && name !== 'Scan' && styles.iconContainerActive
+      focused && !isCenter && styles.iconContainerActive
     ]}>
       <IconComponent
         width={24}
@@ -51,8 +51,17 @@ const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
   );
 };
 
+import { usePrivy, useEmbeddedEthereumWallet } from '@privy-io/expo';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+
 export default function MainTabs() {
   const insets = useSafeAreaInsets();
+
+  // Register for push notifications
+  const { user } = usePrivy();
+  const { wallets } = useEmbeddedEthereumWallet();
+  const wallet = wallets.find(w => w.chain_type === 'ethereum') || user?.wallet;
+  usePushNotifications(wallet?.address);
 
   return (
     <Tab.Navigator
@@ -82,31 +91,34 @@ export default function MainTabs() {
           tabBarIcon: ({ focused }) => <TabBarIcon name="Quests" focused={focused} />,
         }}
       />
+
       <Tab.Screen
-        name="Scan"
-        component={ScanScreen}
+        name="Feed"
+        component={FeedScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabBarIcon name="Scan" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabBarIcon name="Feed" focused={focused} />,
           tabBarButton: (props) => (
             <TouchableOpacity
               {...(props as any)}
-              style={[props.style, styles.scanButtonContainer]}
+              style={[props.style, styles.centerButtonContainer]}
               activeOpacity={0.8}
             >
-              <View style={styles.scanButton}>
+              <View style={styles.centerButton}>
                 {props.children}
               </View>
             </TouchableOpacity>
           ),
         }}
       />
+
       <Tab.Screen
-        name="Inventory"
-        component={InventoryScreen}
+        name="Scan"
+        component={ScanScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabBarIcon name="Inventory" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabBarIcon name="Scan" focused={focused} />,
         }}
       />
+
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
@@ -127,10 +139,6 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     paddingTop: 10,
   },
-  tabBarLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
   iconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -141,13 +149,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(98, 65, 232, 0.1)',
     borderRadius: 12,
   },
-  icon: {
-    fontSize: 24,
+  centerButtonContainer: {
+    top: -20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  scanButtonContainer: {
-    top: -15,
-  },
-  scanButton: {
+  centerButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -155,5 +162,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...Theme.shadows.glow,
+    borderWidth: 4,
+    borderColor: Theme.colors.surface, // Matches tab bar bg to create "cutout" effect
   },
 });

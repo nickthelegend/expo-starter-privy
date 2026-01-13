@@ -82,10 +82,13 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const [mantleBalance, setMantleBalance] = React.useState<string | null>(null);
   const MANTLE_RPC_URL = "https://mantle-sepolia.g.alchemy.com/v2/3qRB0TMQQv3hyKgav_6lF";
 
+  const [inventory, setInventory] = React.useState<any[]>([]);
+
   React.useEffect(() => {
-    const fetchBalance = async () => {
+    const fetchBalanceAndStats = async () => {
       if (!wallet?.address) return;
       try {
+        // Fetch Balance
         const { createPublicClient, http, formatEther } = await import("viem");
         const publicClient = createPublicClient({
           chain: mantleSepoliaTestnet,
@@ -95,12 +98,96 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           address: wallet.address as `0x${string}`,
         });
         setMantleBalance(formatEther(balance));
+
+        // Fetch Quest Count
+        const { supabase } = await import("@/lib/supabase");
+        const { count } = await supabase
+          .from('quest_claims')
+          .select('*', { count: 'exact', head: true })
+          .eq('player_wallet', wallet.address.toLowerCase());
+        setQuestCount(count || 0);
+
+        // Fetch Inventory (Coupons) -> Note: Joining manually or assuming we fetch claims and then coupon details
+        // Ideally we used a view, but let's just fetch claims and then their coupons.
+        // Or if we can join: .select(`*, merchant_coupons(*)`)
+        // NOTE: Supabase join syntax:
+        const { data: claims } = await supabase
+          .from('merchant_coupon_claims')
+          .select(`
+                *,
+                coupon: merchant_coupons (
+                    title,
+                    image_url,
+                    merchant_name
+                )
+            `)
+          .eq('buyer_wallet', wallet.address.toLowerCase());
+
+        if (claims) {
+          setInventory(claims);
+        }
+
       } catch (err) {
-        console.error("Error fetching Mantle balance:", err);
+        console.error("Error fetching profile data:", err);
       }
     };
-    fetchBalance();
+    fetchBalanceAndStats();
   }, [wallet?.address]);
+
+  // ... (Rest of component)
+
+  {/* Global Stats */ }
+  <View style={styles.statsRow}>
+    <View style={styles.miniStat}>
+      <Text style={styles.miniStatValue}>{questCount}</Text>
+      <Text style={styles.miniStatLabel}>Quests</Text>
+    </View>
+    <View style={[styles.miniStat, styles.miniStatCenter]}>
+      <Text style={styles.miniStatValue}>{mantleBalance ? parseFloat(mantleBalance).toFixed(2) : "0.00"}</Text>
+      <Text style={styles.miniStatLabel}>MNT</Text>
+    </View>
+    <View style={styles.miniStat}>
+      <Text style={styles.miniStatValue}>{inventory.length}</Text>
+      <Text style={styles.miniStatLabel}>Items</Text>
+    </View>
+  </View>
+
+  {/* Inventory Section */ }
+  <View style={styles.section}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Theme.spacing.md }}>
+      <Text style={styles.sectionTitle}>My Inventory</Text>
+      <TouchableOpacity onPress={() => Alert.alert("Inventory", "Items you have purchased from the Shop.")}>
+        <Text style={{ color: Theme.colors.primary }}>See All</Text>
+      </TouchableOpacity>
+    </View>
+
+    {inventory.length === 0 ? (
+      <View style={styles.emptyInventory}>
+        <Text style={styles.emptyText}>No items yet. Visit the Shop!</Text>
+      </View>
+    ) : (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.inventoryScroll}>
+        {inventory.map((item: any, index) => (
+          <View key={index} style={styles.inventoryCard}>
+            <Image
+              source={{ uri: item.coupon?.image_url || 'https://via.placeholder.com/100' }}
+              style={styles.inventoryImage}
+            />
+            <View style={styles.inventoryInfo}>
+              <Text style={styles.inventoryTitle} numberOfLines={1}>{item.coupon?.title || 'Unknown Item'}</Text>
+              <Text style={styles.inventoryMerchant}>{item.coupon?.merchant_name}</Text>
+              <View style={styles.redeemBadge}>
+                <Text style={styles.redeemText}>{item.is_redeemed ? 'REDEEMED' : 'READY TO USE'}</Text>
+              </View>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    )}
+  </View>
+
+
+  const [questCount, setQuestCount] = React.useState(0);
 
   const copyToClipboard = (text: string) => {
     // Note: Would need expo-clipboard for actual copying
@@ -643,4 +730,61 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: Theme.typography.fontFamily.semiBold,
   },
+  // Inventory Styles
+  emptyInventory: {
+    padding: 32,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.borderRadius.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    borderStyle: 'dashed'
+  },
+  emptyText: {
+    color: Theme.colors.textMuted,
+    fontFamily: Theme.typography.fontFamily.medium
+  },
+  inventoryScroll: {
+    marginHorizontal: -Theme.spacing.lg,
+    paddingHorizontal: Theme.spacing.lg,
+  },
+  inventoryCard: {
+    width: 140,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.borderRadius.md,
+    marginRight: Theme.spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden'
+  },
+  inventoryImage: {
+    width: '100%',
+    height: 100,
+    backgroundColor: Theme.colors.surface
+  },
+  inventoryInfo: {
+    padding: 8
+  },
+  inventoryTitle: {
+    color: Theme.colors.text,
+    fontFamily: Theme.typography.fontFamily.semiBold,
+    fontSize: 12,
+    marginBottom: 2
+  },
+  inventoryMerchant: {
+    color: Theme.colors.textMuted,
+    fontSize: 10
+  },
+  redeemBadge: {
+    marginTop: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    padding: 4,
+    borderRadius: 4,
+    alignItems: 'center'
+  },
+  redeemText: {
+    color: Theme.colors.success,
+    fontSize: 8,
+    fontFamily: Theme.typography.fontFamily.header
+  }
 });

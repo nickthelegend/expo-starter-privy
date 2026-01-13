@@ -1,0 +1,43 @@
+[
+    {
+        "type": "function",
+        "name": "mintReel",
+        "inputs": [
+            {
+                "name": "to",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "uri",
+                "type": "string",
+                "internalType": "string"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "tokenURI",
+        "inputs": [
+            {
+                "name": "tokenId",
+                "type": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view"
+    }
+]

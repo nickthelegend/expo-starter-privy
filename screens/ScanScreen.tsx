@@ -58,28 +58,50 @@ export default function ScanScreen({ navigation }: ScanScreenProps) {
   }
 
   const handleBarCodeScanned = async ({ type, data }: any) => {
-    if (scanned) return;
+    if (scanned || loading) return;
 
     setScanned(true);
     setLoading(true);
 
     try {
-      // Mock QR verification for now
-      // const result = await verifyQRCode(data);
+      console.log(`Scanned: ${data}`);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Handle deep link format or raw UUID
+      let questId = data;
+      if (data.includes('kyraquest://quest/')) {
+        questId = data.split('kyraquest://quest/')[1];
+      }
+
+      // Basic UUID regex check
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(questId)) {
+        throw new Error("Invalid Quest QR Code");
+      }
+
+      // Fetch quest details
+      const { supabase } = await import('@/lib/supabase');
+      const { data: questData, error } = await supabase
+        .from('quests')
+        .select('*')
+        .eq('id', questId)
+        .single();
+
+      if (error || !questData) {
+        throw new Error("Quest not found");
+      }
 
       setLoading(false);
-      navigation.navigate('Claim', {
-        questId: data,
-        reward: 'Mystery NFT',
-        rewardType: 'NFT',
+      // Navigate to QuestDetail
+      navigation.navigate('Quests', {
+        screen: 'QuestDetail',
+        params: { quest: questData }
       });
-    } catch (error) {
+
+    } catch (error: any) {
       setLoading(false);
-      Alert.alert('Error', 'Invalid QR code or quest not found');
-      setScanned(false);
+      Alert.alert('Scan Failed', error.message || 'Invalid QR code');
+      // Delay before resetting scan to allow user to move camera away
+      setTimeout(() => setScanned(false), 2000);
     }
   };
 

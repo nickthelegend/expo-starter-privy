@@ -20,6 +20,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
       <Stack.Screen name="QMap" component={QMapScreen} />
       <Stack.Screen name="WalletDetail" component={WalletDetailScreen} />
+      <Stack.Screen name="Upload" component={UploadScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen
         name="Claim"
         component={ClaimScreen}

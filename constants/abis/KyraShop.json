@@ -1,0 +1,84 @@
+[
+    {
+        "type": "function",
+        "name": "buyItem",
+        "inputs": [
+            {
+                "name": "_listingId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "listItem",
+        "inputs": [
+            {
+                "name": "_itemId",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "_price",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "_currencyToken",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_stock",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "listings",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "id",
+                "type": "uint256"
+            },
+            {
+                "name": "merchant",
+                "type": "address"
+            },
+            {
+                "name": "itemId",
+                "type": "string"
+            },
+            {
+                "name": "price",
+                "type": "uint256"
+            },
+            {
+                "name": "currencyToken",
+                "type": "address"
+            },
+            {
+                "name": "isActive",
+                "type": "bool"
+            },
+            {
+                "name": "stock",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    }
+]

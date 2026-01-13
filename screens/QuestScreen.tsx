@@ -1,61 +1,31 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    RefreshControl,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { SearchBar } from '@/components/ui/searchbar';
 import { Picker } from '@/components/ui/picker';
-
-const mockQuests = [
-    {
-        id: '1',
-        name: 'Mantle Mystery Hunt',
-        description: 'Uncover the hidden secrets of the Mantle ecosystem. Track the signal and find the treasure chest.',
-        reward: '500 KYRA',
-        rewardType: 'TOKEN',
-        location: 'Central Park, NY',
-        distance: '0.8km',
-        rarity: 'legendary',
-        country: 'USA',
-        coordinate: { latitude: 40.785091, longitude: -73.968285 },
-        type: 'MAP_HUNT',
-    },
-    {
-        id: '2',
-        name: 'Neon Nexus Scan',
-        description: 'Locate the merchant QR code in Shibuya to claim your limited edition loyalty NFT.',
-        reward: 'Rare NFT',
-        rewardType: 'NFT',
-        location: 'Shibuya, Tokyo',
-        distance: '1.2km',
-        rarity: 'epic',
-        country: 'Japan',
-        coordinate: { latitude: 35.658034, longitude: 139.701636 },
-        type: 'QR_SCAN',
-    },
-    {
-        id: '3',
-        name: 'Airdrop Eligibility',
-        description: 'Prove you are a real human using Reclaim Protocol to qualify for the Kyra community airdrop.',
-        reward: '1000 KYRA',
-        rewardType: 'TOKEN',
-        location: 'Global Drop',
-        distance: 'Anywhere',
-        rarity: 'rare',
-        country: 'Global',
-        coordinate: { latitude: 0, longitude: 0 },
-        type: 'VERIFY_DROP',
-    },
-];
+import { supabase } from '@/lib/supabase';
+import { Quest } from '@/constants/Types';
+import { QuestCard } from '@/components/QuestCard';
+import * as Location from 'expo-location';
+import LinkScreen from '@/screens/ShopScreen';
+import { getDistance } from 'geolib';
 
 export default function QuestScreen({ navigation }: { navigation: any }) {
+    const [activeTab, setActiveTab] = useState<'QUESTS' | 'SHOP'>('QUESTS');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCountry, setSelectedCountry] = useState('ALL');
+    const [quests, setQuests] = useState<Quest[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
 
     const countries = [
         { label: 'All Countries', value: 'ALL' },
@@ -63,35 +33,84 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
         { label: 'UK', value: 'UK' },
         { label: 'UAE', value: 'UAE' },
         { label: 'India', value: 'India' },
-        { label: 'Canada', value: 'Canada' },
+        { label: 'Japan', value: 'Japan' },
     ];
 
-    const getRarityColor = (rarity: string) => {
-        switch (rarity) {
-            case 'legendary': return '#FFD700';
-            case 'epic': return '#9333EA';
-            case 'rare': return '#3B82F6';
-            default: return '#6B7280';
+    const fetchQuests = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('quests')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Calculate distances if location available
+            const questsWithDistance = data.map((q: any) => {
+                let distanceStr = '';
+                let distanceVal = 0;
+
+                if (userLocation && q.metadata?.latitude && q.metadata?.longitude) {
+                    const dist = getDistance(
+                        { latitude: userLocation.coords.latitude, longitude: userLocation.coords.longitude },
+                        { latitude: q.metadata.latitude, longitude: q.metadata.longitude }
+                    );
+                    distanceVal = dist;
+                    distanceStr = dist < 1000
+                        ? `${dist}m`
+                        : `${(dist / 1000).toFixed(1)}km`;
+                } else {
+                    distanceStr = q.quest_type === 'map' ? 'Map Quest' : 'Global';
+                }
+
+                return {
+                    ...q,
+                    distance: distanceStr,
+                    distanceVal: distanceVal,
+                    rarity: q.metadata?.rarity || 'common',
+                    country: q.metadata?.country || 'Global',
+                };
+            });
+
+            setQuests(questsWithDistance);
+        } catch (error) {
+            console.error('Error fetching quests:', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
         }
     };
 
-    // Filter quests based on search query and country
+    useEffect(() => {
+        (async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status === 'granted') {
+                let location = await Location.getCurrentPositionAsync({});
+                setUserLocation(location);
+            }
+            fetchQuests();
+        })();
+    }, []);
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        fetchQuests();
+    }, [userLocation]);
+
+    // Filter quests
     const filteredQuests = useMemo(() => {
-        return mockQuests.filter(quest => {
+        return quests.filter(quest => {
             const matchesSearch = !searchQuery.trim() ||
                 quest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                quest.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                quest.location.toLowerCase().includes(searchQuery.toLowerCase());
+                (quest.description && quest.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-            const matchesCountry = selectedCountry === 'ALL' || quest.country === selectedCountry;
+            const matchesCountry = selectedCountry === 'ALL' || (quest as any).country === selectedCountry;
 
             return matchesSearch && matchesCountry;
         });
-    }, [searchQuery, selectedCountry]);
-
-    const handleSearch = (query: string) => {
-        setSearchQuery(query);
-    };
+    }, [searchQuery, selectedCountry, quests]);
 
     return (
         <View style={styles.container}>
@@ -100,100 +119,110 @@ export default function QuestScreen({ navigation }: { navigation: any }) {
                 style={StyleSheet.absoluteFillObject}
             />
 
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.primary} />
+                }
+            >
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Quests</Text>
-
-                    {/* Search Bar */}
-                    <SearchBar
-                        placeholder="Search quests, locations, rewards..."
-                        onSearch={handleSearch}
-                        containerStyle={styles.searchContainer}
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
-
-                    {/* Country Picker */}
-                    <Picker
-                        options={countries}
-                        value={selectedCountry}
-                        onValueChange={setSelectedCountry}
-                        placeholder='Filter by country...'
-                        style={{ marginBottom: Theme.spacing.lg }}
-                    />
-
-                    {/* Launch Quest Hero */}
-                    <TouchableOpacity
-                        style={styles.launchHero}
-                        onPress={() => navigation.navigate('Launch')}
-                    >
-                        <LinearGradient
-                            colors={Theme.gradients.primary as any}
-                            style={styles.launchGradient}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
+                    <View style={styles.tabContainer}>
+                        <TouchableOpacity
+                            style={[styles.tabButton, activeTab === 'QUESTS' && styles.tabActive]}
+                            onPress={() => setActiveTab('QUESTS')}
                         >
-                            <View style={styles.launchContent}>
-                                <View>
-                                    <Text style={styles.launchTitle}>Launch Nearby Quest</Text>
-                                    <Text style={styles.launchSubtitle}>Scan to discover hidden items</Text>
-                                </View>
-                                <View style={styles.launchButtonInner}>
-                                    <Text style={styles.launchIcon}>🚀</Text>
-                                </View>
-                            </View>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                            <Text style={[styles.tabText, activeTab === 'QUESTS' && styles.tabTextActive]}>Quests</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.tabButton, activeTab === 'SHOP' && styles.tabActive]}
+                            onPress={() => setActiveTab('SHOP')}
+                        >
+                            <Text style={[styles.tabText, activeTab === 'SHOP' && styles.tabTextActive]}>Shop</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                    <View style={styles.sectionDivider}>
-                        <Text style={styles.sectionSubtitle}>
-                            {searchQuery || selectedCountry !== 'ALL' ? `Found ${filteredQuests.length} quest${filteredQuests.length !== 1 ? 's' : ''}` : 'Available Near You'}
+                    {activeTab === 'QUESTS' ? (
+                        <>
+                            <SearchBar
+                                placeholder="Search quests, locations, rewards..."
+                                onSearch={setSearchQuery}
+                                containerStyle={styles.searchContainer}
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                            />
+
+                            <Picker
+                                options={countries}
+                                value={selectedCountry}
+                                onValueChange={setSelectedCountry}
+                                placeholder='Filter by country...'
+                                style={{ marginBottom: Theme.spacing.lg }}
+                            />
+
+                            {/* Launch Quest Hero - Keeps navigation to Launch screen if defined */}
+                            <TouchableOpacity
+                                style={styles.launchHero}
+                                onPress={() => navigation.navigate('Launch')}
+                            >
+                                <LinearGradient
+                                    colors={Theme.gradients.primary as any}
+                                    style={styles.launchGradient}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                >
+                                    <View style={styles.launchContent}>
+                                        <View>
+                                            <Text style={styles.launchTitle}>Launch Nearby Quest</Text>
+                                            <Text style={styles.launchSubtitle}>Scan to discover hidden items</Text>
+                                        </View>
+                                        <View style={styles.launchButtonInner}>
+                                            <Text style={styles.launchIcon}>🚀</Text>
+                                        </View>
+                                    </View>
+                                </LinearGradient>
+                            </TouchableOpacity>
+
+                            <View style={styles.sectionDivider}>
+                                <Text style={styles.sectionSubtitle}>
+                                    {searchQuery ? `Found ${filteredQuests.length} results` : 'Available Near You'}
+                                </Text>
+                            </View>
+
+                        </View>
+                </>
+                    ) : null}
+        </View>
+
+                {
+        activeTab === 'QUESTS' ? (
+            <View style={styles.questList}>
+                {loading && !refreshing ? (
+                    <Text style={{ color: 'white', textAlign: 'center' }}>Loading quests...</Text>
+                ) : filteredQuests.length > 0 ? (
+                    filteredQuests.map((quest) => (
+                        <QuestCard
+                            key={quest.id}
+                            quest={quest}
+                            onPress={() => navigation.navigate('QuestDetail', { quest })}
+                        />
+                    ))
+                ) : (
+                    <View style={styles.emptyState}>
+                        <Text style={styles.emptyStateIcon}>🔍</Text>
+                        <Text style={styles.emptyStateTitle}>No quests found</Text>
+                        <Text style={styles.emptyStateText}>
+                            Check back later or try a different filter.
                         </Text>
                     </View>
-                </View>
-
-                <View style={styles.questList}>
-                    {filteredQuests.length > 0 ? (
-                        filteredQuests.map((quest) => (
-                            <TouchableOpacity
-                                key={quest.id}
-                                style={styles.questCard}
-                                onPress={() => navigation.navigate('QuestDetail', { quest })}
-                            >
-                                <View
-                                    style={[
-                                        styles.rarityBadge,
-                                        { backgroundColor: getRarityColor(quest.rarity) },
-                                    ]}
-                                >
-                                    <Text style={styles.rarityText}>{quest.rarity.toUpperCase()}</Text>
-                                </View>
-
-                                <Text style={styles.questName}>{quest.name}</Text>
-
-                                <View style={styles.questFooter}>
-                                    <View>
-                                        <Text style={styles.rewardLabel}>Reward</Text>
-                                        <Text style={styles.rewardValue}>{quest.reward}</Text>
-                                    </View>
-                                    <View style={styles.distanceBadge}>
-                                        <Text style={styles.distanceText}>📍 {quest.distance}</Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        ))
-                    ) : (
-                        <View style={styles.emptyState}>
-                            <Text style={styles.emptyStateIcon}>🔍</Text>
-                            <Text style={styles.emptyStateTitle}>No quests found</Text>
-                            <Text style={styles.emptyStateText}>
-                                Try adjusting your search terms or explore different areas
-                            </Text>
-                        </View>
-                    )}
-                </View>
-            </ScrollView>
-        </View>
+                )}
+            </View>
+        ) : (
+            <LinkScreen />
+        )
+    }
+            </ScrollView >
+        </View >
     );
 }
 
@@ -214,6 +243,30 @@ const styles = StyleSheet.create({
         fontFamily: Theme.typography.fontFamily.header,
         color: Theme.colors.text,
         marginBottom: Theme.spacing.lg,
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        marginBottom: 20,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 12,
+        padding: 4,
+    },
+    tabButton: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    tabActive: {
+        backgroundColor: Theme.colors.surface,
+        ...Theme.shadows.glow,
+    },
+    tabText: {
+        color: Theme.colors.textMuted,
+        fontWeight: '600',
+    },
+    tabTextActive: {
+        color: Theme.colors.text,
     },
     searchContainer: {
         marginBottom: Theme.spacing.lg,
@@ -269,56 +322,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: Theme.spacing.md,
         paddingBottom: Theme.spacing.xl,
         gap: Theme.spacing.md,
-    },
-    questCard: {
-        backgroundColor: Theme.colors.surface,
-        borderRadius: Theme.borderRadius.lg,
-        padding: Theme.spacing.md,
-        borderWidth: 1,
-        borderColor: Theme.colors.border,
-    },
-    rarityBadge: {
-        alignSelf: 'flex-start',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 8,
-        marginBottom: Theme.spacing.sm,
-    },
-    rarityText: {
-        fontSize: 10,
-        fontFamily: Theme.typography.fontFamily.semiBold,
-        color: Theme.colors.text,
-    },
-    questName: {
-        fontSize: 20,
-        fontFamily: Theme.typography.fontFamily.header,
-        color: Theme.colors.text,
-        marginBottom: Theme.spacing.md,
-    },
-    questFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-    },
-    rewardLabel: {
-        fontSize: 12,
-        color: Theme.colors.textMuted,
-        marginBottom: 2,
-    },
-    rewardValue: {
-        fontSize: 16,
-        fontFamily: Theme.typography.fontFamily.header,
-        color: Theme.colors.primary,
-    },
-    distanceBadge: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
-    },
-    distanceText: {
-        fontSize: 14,
-        color: Theme.colors.textMuted,
     },
     emptyState: {
         alignItems: 'center',
