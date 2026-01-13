@@ -10,6 +10,7 @@ import QMapScreen from '@/screens/QMapScreen';
 import WalletDetailScreen from '@/screens/WalletDetailScreen';
 import UploadScreen from '@/screens/UploadScreen';
 import ScanScreen from '@/screens/ScanScreen';
+import TokenLauncherScreen from '@/screens/TokenLauncherScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ export default function AppNavigator() {
       <Stack.Screen name="MainTabs" component={MainTabs} />
       <Stack.Screen name="QuestDetail" component={QuestDetailScreen} />
       <Stack.Screen name="Launch" component={LaunchScreen} />
+      <Stack.Screen name="TokenLauncher" component={TokenLauncherScreen} />
       <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
       <Stack.Screen name="QMap" component={QMapScreen} />
       <Stack.Screen name="WalletDetail" component={WalletDetailScreen} />

@@ -58,26 +58,46 @@ export default function ShopScreen() {
                             // 2. Import Deps
                             const { ethers } = await import("ethers");
                             const KYRA_SHOP_ABI = (await import("@/constants/abis/KyraShop.json")).default;
-                            const { KYRA_SHOP_ADDRESS } = await import("@/constants/Contracts");
+                            const ERC20_ABI = (await import("@/constants/abis/ERC20.json")).default;
+                            const { KYRA_SHOP_ADDRESS, KYRA_TOKEN_ADDRESS } = await import("@/constants/Contracts");
 
                             // 3. Setup Provider/Signer
-                            const provider = await wallet.getEthersProvider();
-                            const signer = provider.getSigner();
+                            const rawProvider = await wallet.getProvider();
+                            const provider = new ethers.BrowserProvider(rawProvider);
+                            const signer = await provider.getSigner();
                             const contract = new ethers.Contract(KYRA_SHOP_ADDRESS, KYRA_SHOP_ABI, signer);
 
-                            // 4. Execute Transaction
-                            // Note: We need the listingId. For demo, we assume coupon.id maps to listingId if numeric, else 0
-                            const listingId = parseInt(coupon.id) || 0;
+                            // 4. Resolve Currency
+                            let currencyAddr = coupon.price_token;
+                            if (currencyAddr === 'KYRA') currencyAddr = KYRA_TOKEN_ADDRESS;
 
-                            // TODO: Approve Tokens first (skipped for brevity, assuming existing approval or native logic)
+                            // 5. Approve Tokens
+                            const tokenContract = new ethers.Contract(currencyAddr, ERC20_ABI, signer);
+                            const amount = ethers.parseEther(coupon.price_amount.toString());
 
+                            Alert.alert("Approving Tokens", "Please sign the approval transaction...");
+                            const appTx = await tokenContract.approve(KYRA_SHOP_ADDRESS, amount);
+                            await appTx.wait();
+
+                            // 6. Execute Purchase
+                            const listingId = coupon.listing_id || 0;
+                            Alert.alert("Complete Purchase", "Please sign the purchase transaction...");
                             const tx = await contract.buyItem(listingId);
                             Alert.alert("Transaction Sent", `Hash: ${tx.hash}`);
                             await tx.wait();
 
-                            // 5. Success
+                            // 7. Sync to Supabase
+                            await supabase.from('merchant_coupon_claims').insert({
+                                coupon_id: coupon.id,
+                                buyer_wallet: wallet.address.toLowerCase(),
+                                purchase_price: coupon.price_amount,
+                                purchase_token: currencyAddr,
+                                redeem_code: Math.random().toString(36).substring(7).toUpperCase(),
+                                is_redeemed: false
+                            });
+
+                            // Success
                             Alert.alert("Success!", "Item purchased successfully.");
-                            // TODO: Add record to Supabase
 
                         } catch (err: any) {
                             console.error(err);
@@ -93,7 +113,8 @@ export default function ShopScreen() {
 
     const { user } = usePrivy();
     const { wallets } = useEmbeddedEthereumWallet();
-    const wallet = wallets.find(w => w.chain_type === 'ethereum');
+    const wallet = wallets.find(w => w.chainType === 'ethereum');
+
 
     const renderItem = ({ item }: { item: Coupon }) => (
         <TouchableOpacity style={styles.card} onPress={() => handleBuy(item)}>
@@ -114,18 +135,20 @@ export default function ShopScreen() {
 
     return (
         <View style={styles.container}>
-            <FlatList
-                data={coupons}
-                renderItem={renderItem}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.list}
-                ListEmptyComponent={
+            <View style={styles.list}>
+                {coupons.length > 0 ? (
+                    coupons.map((item) => (
+                        <View key={item.id}>
+                            {renderItem({ item })}
+                        </View>
+                    ))
+                ) : !loading && (
                     <View style={styles.emptyContainer}>
                         <Ionicons name="storefront-outline" size={48} color={Theme.colors.textMuted} />
                         <Text style={styles.emptyText}>No coupons available yet.</Text>
                     </View>
-                }
-            />
+                )}
+            </View>
         </View>
     );
 }

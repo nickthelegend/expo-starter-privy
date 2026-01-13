@@ -5,6 +5,9 @@ import { Theme } from '@/constants/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ItemSelectionGallery } from '@/components/ItemSelectionGallery';
+import { usePrivy, useEmbeddedEthereumWallet } from '@privy-io/expo';
+import { supabase } from '@/lib/supabase';
+import { Alert, ActivityIndicator } from 'react-native';
 
 interface LaunchScreenProps {
     navigation: any;
@@ -17,6 +20,11 @@ export default function LaunchScreen({ navigation }: LaunchScreenProps) {
     const [isGalleryVisible, setIsGalleryVisible] = useState(false);
     const [rewardAmount, setRewardAmount] = useState('1');
     const [mintAtLaunch, setMintAtLaunch] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const { user } = usePrivy();
+    const { wallets } = useEmbeddedEthereumWallet();
+    const wallet = wallets.find(w => w.chainType === 'ethereum');
 
     const mockInventory = [
         { id: '1', type: 'NFT' as const, name: 'Pioneer Badge', image: '🏆', rarity: 'legendary' },
@@ -110,6 +118,13 @@ export default function LaunchScreen({ navigation }: LaunchScreenProps) {
                         )}
                     </TouchableOpacity>
 
+                    <TouchableOpacity
+                        style={styles.createTokenLink}
+                        onPress={() => navigation.navigate('TokenLauncher')}
+                    >
+                        <Text style={styles.createTokenLinkText}>Or Create a New Reward Token →</Text>
+                    </TouchableOpacity>
+
                     {selectedReward && (
                         <View style={styles.configCard}>
                             <View style={styles.configItem}>
@@ -155,8 +170,83 @@ export default function LaunchScreen({ navigation }: LaunchScreenProps) {
                 <View style={styles.footer}>
                     <TouchableOpacity
                         style={styles.launchButton}
-                        onPress={() => {
-                            // Logic to launch quest
+                        disabled={loading}
+                        onPress={async () => {
+                            try {
+                                setLoading(true);
+                                if (!wallet) throw new Error("Wallet not connected");
+
+                                const { ethers } = await import("ethers");
+                                const QUEST_FACTORY_ABI = (await import("@/constants/abis/QuestFactory.json")).default;
+                                const { QUEST_FACTORY_ADDRESS } = await import("@/constants/Contracts");
+
+                                const rawProvider = await wallet.getProvider();
+                                const provider = new ethers.BrowserProvider(rawProvider);
+                                const signer = await provider.getSigner();
+                                const factory = new ethers.Contract(QUEST_FACTORY_ADDRESS, QUEST_FACTORY_ABI, signer);
+
+                                // 1. Check if we need to create a token first
+                                let rewardTokenAddr = selectedReward?.address || ethers.ZeroAddress;
+                                if (!rewardTokenAddr && selectedReward?.type === 'TOKEN') {
+                                    // For demo, we just use a fallback or prompt "Create Token"
+                                    // In real flow, user would have created token via a separate button
+                                }
+
+                                // 2. Build Config
+                                const expiry = Math.floor(Date.now() / 1000) + 86400; // 24h
+                                const config = {
+                                    name: companyName || "New Quest",
+                                    description: "Quest launched from mobile",
+                                    rewardType: selectedReward?.type === 'NFT' ? 1 : 0,
+                                    questType: questType === 'QR_SCAN' ? 1 : 0,
+                                    rewardToken: rewardTokenAddr,
+                                    rewardAmount: ethers.parseEther(rewardAmount),
+                                    maxClaims: 100,
+                                    expiryTimestamp: expiry,
+                                    isRecurring: false,
+                                    recurringInterval: 0,
+                                    nftGateAddress: ethers.ZeroAddress,
+                                    referralBps: 0
+                                };
+
+                                // 3. Launch On-Chain
+                                Alert.alert("Confirm Launch", "Sending transaction to Mantle Sepolia...");
+                                let tx;
+                                if (config.rewardType === 1) {
+                                    tx = await factory.createNFTQuest(config);
+                                } else {
+                                    tx = await factory.createTokenQuest(config);
+                                }
+
+                                const receipt = await tx.wait();
+                                const questCreatedEvent = receipt.logs.find((x: any) => x.fragment && x.fragment.name === 'QuestCreated');
+                                const questAddress = questCreatedEvent.args[0];
+
+                                // 4. Sync to Supabase
+                                const { error: dbError } = await supabase.from('quests').insert({
+                                    address: questAddress,
+                                    creator_wallet: wallet.address.toLowerCase(),
+                                    title: companyName + " Hunt",
+                                    description: "Scan or Visit to earn rewards.",
+                                    reward_amount: parseFloat(rewardAmount),
+                                    reward_token: rewardTokenAddr,
+                                    quest_type: questType === 'QR_SCAN' ? 'qr' : 'map',
+                                    is_active: true,
+                                    claims_made: 0,
+                                    max_claims: 100
+                                });
+
+                                if (dbError) throw dbError;
+
+                                Alert.alert("🚀 Launched!", `Quest deployed to: ${questAddress}`);
+                                navigation.goBack();
+
+                            } catch (err: any) {
+                                console.error(err);
+                                Alert.alert("Launch Failed", err.message || "Unknown error");
+                            } finally {
+                                setLoading(false);
+                            }
                         }}
                     >
                         <LinearGradient
@@ -165,7 +255,7 @@ export default function LaunchScreen({ navigation }: LaunchScreenProps) {
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                         >
-                            <Text style={styles.launchButtonText}>INITIATE LAUNCH SEQUENCE</Text>
+                            {loading ? <ActivityIndicator color="white" /> : <Text style={styles.launchButtonText}>INITIATE LAUNCH SEQUENCE</Text>}
                         </LinearGradient>
                     </TouchableOpacity>
                 </View>
@@ -357,4 +447,15 @@ const styles = StyleSheet.create({
         fontFamily: Theme.typography.fontFamily.header,
         letterSpacing: 1,
     },
+    createTokenLink: {
+        marginTop: 12,
+        alignSelf: 'flex-end',
+        padding: 4,
+    },
+    createTokenLinkText: {
+        color: Theme.colors.primary,
+        fontSize: 14,
+        fontFamily: Theme.typography.fontFamily.medium,
+        textDecorationLine: 'underline',
+    }
 });

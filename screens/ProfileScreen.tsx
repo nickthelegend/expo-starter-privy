@@ -269,7 +269,11 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               { id: 'priv', title: 'Privacy', desc: 'Data Usage', icon: '🔒' },
               { id: 'help', title: 'Support', desc: 'Get Assistance', icon: '❓' },
             ].map((item) => (
-              <TouchableOpacity key={item.id} style={styles.modernSettingItem}>
+              <TouchableOpacity
+                key={item.id}
+                style={styles.modernSettingItem}
+                onPress={() => Alert.alert(item.title, `${item.title} settings will be available in the next update.`)}
+              >
                 <View style={styles.settingIconBox}>
                   <Text style={styles.settingEmoji}>{item.icon}</Text>
                 </View>

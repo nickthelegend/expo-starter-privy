@@ -70,8 +70,9 @@ export default function UploadScreen({ navigation }: { navigation: any }) {
                 const QUEST_REEL_ABI = (await import("@/constants/abis/QuestReelNFT.json")).default;
                 const { QUEST_REEL_NFT_ADDRESS } = await import("@/constants/Contracts");
 
-                const provider = await wallet.getEthersProvider();
-                const signer = provider.getSigner();
+                const rawProvider = await wallet.getProvider();
+                const provider = new ethers.BrowserProvider(rawProvider);
+                const signer = await provider.getSigner();
                 const contract = new ethers.Contract(QUEST_REEL_NFT_ADDRESS, QUEST_REEL_ABI, signer);
 
                 const tx = await contract.mintReel(wallet.address, mockUrl);

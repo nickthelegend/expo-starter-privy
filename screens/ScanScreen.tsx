@@ -66,16 +66,16 @@ export default function ScanScreen({ navigation }: ScanScreenProps) {
     try {
       console.log(`Scanned: ${data}`);
 
-      // Handle deep link format or raw UUID
+      // Handle deep link format: kyraquest://quest/[id]/claim/[code]
       let questId = data;
-      if (data.includes('kyraquest://quest/')) {
-        questId = data.split('kyraquest://quest/')[1];
-      }
+      let claimCode = null;
 
-      // Basic UUID regex check
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(questId)) {
-        throw new Error("Invalid Quest QR Code");
+      if (data.includes('kyraquest://quest/')) {
+        const parts = data.split('kyraquest://quest/')[1].split('/');
+        questId = parts[0];
+        if (parts[1] === 'claim' && parts[2]) {
+          claimCode = parts[2];
+        }
       }
 
       // Fetch quest details
@@ -94,7 +94,10 @@ export default function ScanScreen({ navigation }: ScanScreenProps) {
       // Navigate to QuestDetail
       navigation.navigate('Quests', {
         screen: 'QuestDetail',
-        params: { quest: questData }
+        params: {
+          quest: questData,
+          claimCode: claimCode
+        }
       });
 
     } catch (error: any) {

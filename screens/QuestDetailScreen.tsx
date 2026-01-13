@@ -26,7 +26,8 @@ import { KYRA_TOKEN_ADDRESS } from '@/constants/Contracts';
 const QuestABI = QuestArtifact;
 
 export default function QuestDetailScreen({ route, navigation }: { route: any, navigation: any }) {
-    const { quest }: { quest: Quest } = route.params;
+    const quest = route.params?.quest;
+    const claimCode = route.params?.claimCode;
     const [showLootBox, setShowLootBox] = useState(false);
     const [claiming, setClaiming] = useState(false);
     const [hasClaimed, setHasClaimed] = useState(false);
@@ -144,9 +145,18 @@ export default function QuestDetailScreen({ route, navigation }: { route: any, n
 
             let tx;
             if (quest.quest_type === 'qr') {
-                Alert.alert("QR Required", "Please locate the QR code to claim.");
-                setClaiming(false);
-                return;
+                if (claimCode) {
+                    console.log(`Claiming QR quest with code: ${claimCode}`);
+                    // Ensure code is bytes32
+                    const codeHash = (claimCode.startsWith('0x') && claimCode.length === 66)
+                        ? claimCode
+                        : ethers.id(claimCode);
+                    tx = await questContract.claimWithCode(codeHash, refAddr);
+                } else {
+                    Alert.alert("QR Required", "Please locate the QR code to claim.");
+                    setClaiming(false);
+                    return;
+                }
             } else {
                 tx = await questContract.claim(refAddr);
             }

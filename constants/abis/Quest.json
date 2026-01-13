@@ -2,26 +2,30 @@
   {
     "type": "function",
     "name": "claim",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "referrer",
+        "type": "address"
+      }
+    ],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
   {
     "type": "function",
-    "name": "isClaimed",
+    "name": "claimWithCode",
     "inputs": [
       {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "outputs": [
+        "name": "verificationCode",
+        "type": "bytes32"
+      },
       {
-        "name": "",
-        "type": "bool"
+        "name": "referrer",
+        "type": "address"
       }
     ],
-    "stateMutability": "view"
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -39,5 +43,17 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "fundWithTokens",
+    "inputs": [
+      {
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   }
 ]
