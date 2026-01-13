@@ -13,10 +13,11 @@ import FeedScreen from '@/screens/FeedScreen';
 import {
   HomeIcon,
   QuestsIcon,
-  ScanIcon,
+  InventoryIcon,
   ProfileIcon,
   FeedIcon
 } from '@/components/TabIcons';
+import InventoryScreen from '@/screens/InventoryScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -25,7 +26,7 @@ const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
     Home: HomeIcon,
     Quests: QuestsIcon,
     Feed: FeedIcon,
-    Scan: ScanIcon,
+    Inventory: InventoryIcon,
     Profile: ProfileIcon,
   }[name];
 
@@ -60,7 +61,7 @@ export default function MainTabs() {
   // Register for push notifications
   const { user } = usePrivy();
   const { wallets } = useEmbeddedEthereumWallet();
-  const wallet = wallets.find(w => w.chain_type === 'ethereum') || user?.wallet;
+  const wallet = wallets.find(w => w.chainType === 'ethereum') || (user as any)?.wallet;
   usePushNotifications(wallet?.address);
 
   return (
@@ -72,6 +73,7 @@ export default function MainTabs() {
           ...styles.tabBar,
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom,
+          paddingTop: 10,
         },
         tabBarActiveTintColor: Theme.colors.primary,
         tabBarInactiveTintColor: "#FFFFFF",
@@ -112,10 +114,10 @@ export default function MainTabs() {
       />
 
       <Tab.Screen
-        name="Scan"
-        component={ScanScreen}
+        name="Inventory"
+        component={InventoryScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabBarIcon name="Scan" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabBarIcon name="Inventory" focused={focused} />,
         }}
       />
 

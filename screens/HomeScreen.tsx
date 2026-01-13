@@ -15,6 +15,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { usePrivy, useEmbeddedEthereumWallet } from '@privy-io/expo';
 import AutoCarousel from '@/components/AutoCarousel';
 import ClaimModal from '@/components/ClaimModal';
+import { ScanIcon } from '@/components/TabIcons';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.85;
@@ -122,8 +123,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
   const { wallets } = useEmbeddedEthereumWallet();
-  const wallet = wallets.find(w => w.chain_type === 'ethereum');
-  const userAddress = wallet?.address || user?.wallet?.address;
+  const wallet = wallets.find(w => w.chainType === 'ethereum');
+  const userAddress = wallet?.address || (user as any)?.wallet?.address;
   const avatarUrl = userAddress
     ? `https://api.dicebear.com/7.x/identicon/png?seed=${userAddress}`
     : (user as any)?.linked_accounts?.[0]?.picture;
@@ -154,26 +155,34 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 {user?.id ? 'Explorer' : 'Guest'}
               </Text>
             </View>
-            <TouchableOpacity
-              style={styles.profileButton}
-              onPress={() => navigation.navigate('Profile')}
-            >
-              <LinearGradient
-                colors={Theme.gradients.primary as any}
-                style={styles.avatarBorder}
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                style={styles.scanButton}
+                onPress={() => navigation.navigate('Scan')}
               >
-                <View style={styles.avatarInner}>
-                  {avatarUrl ? (
-                    <Image
-                      source={{ uri: avatarUrl }}
-                      style={styles.avatarImage}
-                    />
-                  ) : (
-                    <Text style={styles.avatarEmoji}>👤</Text>
-                  )}
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                <ScanIcon width={24} height={24} fill="#FFFFFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.profileButton}
+                onPress={() => navigation.navigate('Profile')}
+              >
+                <LinearGradient
+                  colors={Theme.gradients.primary as any}
+                  style={styles.avatarBorder}
+                >
+                  <View style={styles.avatarInner}>
+                    {avatarUrl ? (
+                      <Image
+                        source={{ uri: avatarUrl }}
+                        style={styles.avatarImage}
+                      />
+                    ) : (
+                      <Text style={styles.avatarEmoji}>👤</Text>
+                    )}
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -339,6 +348,21 @@ const styles = StyleSheet.create({
   profileButton: {
     borderRadius: 25,
     ...Theme.shadows.glow,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  scanButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   avatarBorder: {
     width: 50,

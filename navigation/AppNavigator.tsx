@@ -9,6 +9,7 @@ import LeaderboardScreen from '@/screens/LeaderboardScreen';
 import QMapScreen from '@/screens/QMapScreen';
 import WalletDetailScreen from '@/screens/WalletDetailScreen';
 import UploadScreen from '@/screens/UploadScreen';
+import ScanScreen from '@/screens/ScanScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
       <Stack.Screen name="QMap" component={QMapScreen} />
       <Stack.Screen name="WalletDetail" component={WalletDetailScreen} />
+      <Stack.Screen name="Scan" component={ScanScreen} />
       <Stack.Screen name="Upload" component={UploadScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen
         name="Claim"
