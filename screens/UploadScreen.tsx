@@ -1,38 +1,67 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, Dimensions } from 'react-native';
+import { Camera, CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import { Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { Video, ResizeMode } from 'expo-av';
 import { supabase } from '@/lib/supabase';
 import { usePrivy, useEmbeddedEthereumWallet, getUserEmbeddedEthereumWallet } from '@privy-io/expo';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function UploadScreen({ navigation }: { navigation: any }) {
     const [videoUri, setVideoUri] = useState<string | null>(null);
     const [caption, setCaption] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [facing, setFacing] = useState<'back' | 'front'>('back');
+    const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+    const [micPermission, requestMicPermission] = useMicrophonePermissions();
+    const cameraRef = useRef<any>(null);
 
     const { user } = usePrivy();
     const { wallets } = useEmbeddedEthereumWallet();
     const embeddedWallet = getUserEmbeddedEthereumWallet(user);
     const wallet = embeddedWallet || (user as any)?.wallet || wallets[0];
 
-    const pickVideo = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-            allowsEditing: true,
-            quality: 1,
-        });
+    useEffect(() => {
+        (async () => {
+            if (!cameraPermission?.granted) await requestCameraPermission();
+            if (!micPermission?.granted) await requestMicPermission();
+        })();
+    }, []);
 
-        if (!result.canceled) {
-            setVideoUri(result.assets[0].uri);
+    const toggleCameraFacing = () => {
+        setFacing(current => (current === 'back' ? 'front' : 'back'));
+    };
+
+    const startRecording = async () => {
+        if (cameraRef.current && !isRecording) {
+            try {
+                setIsRecording(true);
+                const record = await cameraRef.current.recordAsync({
+                    maxDuration: 60,
+                });
+                setVideoUri(record.uri);
+                setIsRecording(false);
+            } catch (error) {
+                console.error("Recording failed:", error);
+                setIsRecording(false);
+            }
+        }
+    };
+
+    const stopRecording = () => {
+        if (cameraRef.current && isRecording) {
+            cameraRef.current.stopRecording();
+            setIsRecording(false);
         }
     };
 
     const handleUpload = async () => {
         if (!videoUri || !caption) {
-            Alert.alert('Error', 'Please select a video and add a caption');
+            Alert.alert('Error', 'Please record a video and add a caption');
             return;
         }
         if (!wallet) {
@@ -42,30 +71,23 @@ export default function UploadScreen({ navigation }: { navigation: any }) {
 
         setUploading(true);
         try {
-            // 1. Upload to Supabase Storage (Mocking for now as we need bucket setup)
-            // const { data, error } = await supabase.storage.from('reels').upload(...)
-
             // Simulating upload delay
             await new Promise(resolve => setTimeout(resolve, 2000));
-            const mockUrl = videoUri; // Use local URI or the result from storage
+            const mockUrl = videoUri;
 
-            // 2. Insert to feed_posts table
             const { error: dbError } = await supabase
                 .from('feed_posts')
                 .insert({
                     owner_wallet: wallet.address.toLowerCase(),
-                    video_url: mockUrl, // In prod, this is the public URL
+                    video_url: mockUrl,
                     caption: caption,
                     likes: 0
                 });
 
             if (dbError) throw dbError;
 
-            // 3. Mint NFT (SocialFi)
-            // Note: This requires the wallet to sign the transaction
+            // Mint NFT (SocialFi)
             try {
-                Alert.alert("Minting NFT", "Please sign the transaction to mint your Reel.");
-
                 const { ethers } = await import("ethers");
                 const QUEST_REEL_ABI = (await import("@/constants/abis/QuestReelNFT.json")).default;
                 const { QUEST_REEL_NFT_ADDRESS } = await import("@/constants/Contracts");
@@ -93,57 +115,105 @@ export default function UploadScreen({ navigation }: { navigation: any }) {
         }
     };
 
+    if (!cameraPermission || !micPermission) {
+        return <View style={styles.container} />;
+    }
+
+    if (!cameraPermission.granted || !micPermission.granted) {
+        return (
+            <View style={styles.container}>
+                <Text style={{ textAlign: 'center', color: 'white', marginTop: 100 }}>
+                    We need your permission to show the camera and record audio
+                </Text>
+                <TouchableOpacity onPress={() => { requestCameraPermission(); requestMicPermission(); }} style={styles.permissionBtn}>
+                    <Text style={{ color: 'white', fontWeight: 'bold' }}>Grant Permission</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#000000', '#1a103c']}
-                style={StyleSheet.absoluteFillObject}
-            />
+            {!videoUri ? (
+                <View style={{ flex: 1 }}>
+                    <CameraView
+                        ref={cameraRef}
+                        style={styles.camera}
+                        facing={facing}
+                        mode="video"
+                    >
+                        <View style={styles.cameraOverlay}>
+                            <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
+                                <Ionicons name="close" size={30} color="white" />
+                            </TouchableOpacity>
 
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="close" size={28} color="white" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>New Post</Text>
-                <TouchableOpacity onPress={handleUpload} disabled={uploading}>
-                    {uploading ? <ActivityIndicator color={Theme.colors.primary} /> : <Text style={styles.postButton}>Post</Text>}
-                </TouchableOpacity>
-            </View>
+                            <TouchableOpacity style={styles.flipBtn} onPress={toggleCameraFacing}>
+                                <Ionicons name="camera-reverse-outline" size={30} color="white" />
+                                <Text style={styles.flipText}>Flip</Text>
+                            </TouchableOpacity>
 
-            <View style={styles.content}>
-                {videoUri ? (
-                    <View style={styles.previewContainer}>
-                        <Video
-                            source={{ uri: videoUri }}
-                            style={styles.videoPreview}
-                            resizeMode={ResizeMode.COVER}
-                            shouldPlay
-                            isLooping
-                            isMuted
-                        />
-                        <TouchableOpacity style={styles.changeButton} onPress={pickVideo}>
-                            <Text style={styles.changeText}>Change Video</Text>
-                        </TouchableOpacity>
-                    </View>
-                ) : (
-                    <TouchableOpacity style={styles.uploadBox} onPress={pickVideo}>
-                        <Ionicons name="cloud-upload-outline" size={48} color={Theme.colors.textMuted} />
-                        <Text style={styles.uploadText}>Select Video from Gallery</Text>
-                    </TouchableOpacity>
-                )}
-
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Write a caption..."
-                        placeholderTextColor={Theme.colors.textMuted}
-                        multiline
-                        value={caption}
-                        onChangeText={setCaption}
-                        maxLength={200}
-                    />
+                            <View style={styles.controls}>
+                                <TouchableOpacity
+                                    style={[styles.recordBtn, isRecording && styles.recordingActive]}
+                                    onPressIn={startRecording}
+                                    onPressOut={stopRecording}
+                                >
+                                    <View style={[styles.recordInner, isRecording && styles.recordInnerActive]} />
+                                </TouchableOpacity>
+                                <Text style={styles.recordText}>
+                                    {isRecording ? 'Release to Stop' : 'Hold to Record'}
+                                </Text>
+                            </View>
+                        </View>
+                    </CameraView>
                 </View>
-            </View>
+            ) : (
+                <View style={{ flex: 1 }}>
+                    <Video
+                        source={{ uri: videoUri }}
+                        style={styles.videoPreview}
+                        resizeMode={ResizeMode.COVER}
+                        shouldPlay
+                        isLooping
+                    />
+
+                    <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.8)']}
+                        style={styles.previewOverlay}
+                    >
+                        <TouchableOpacity style={styles.backBtn} onPress={() => setVideoUri(null)}>
+                            <Ionicons name="chevron-back" size={28} color="white" />
+                        </TouchableOpacity>
+
+                        <View style={styles.inputSection}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Add a catchy caption..."
+                                placeholderTextColor="rgba(255,255,255,0.6)"
+                                multiline
+                                value={caption}
+                                onChangeText={setCaption}
+                                maxLength={150}
+                            />
+
+                            <TouchableOpacity
+                                style={[styles.finalPostBtn, uploading && styles.disabledBtn]}
+                                onPress={handleUpload}
+                                disabled={uploading}
+                            >
+                                {uploading ? (
+                                    <ActivityIndicator color="white" />
+                                ) : (
+                                    <>
+                                        <Text style={styles.finalPostText}>Share Reel</Text>
+                                        <Ionicons name="arrow-forward" size={20} color="white" />
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </LinearGradient>
+                </View>
+            )}
         </View>
     );
 }
@@ -151,79 +221,127 @@ export default function UploadScreen({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Theme.colors.background,
-        paddingTop: 50,
+        backgroundColor: 'black',
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+    camera: {
+        flex: 1,
+    },
+    cameraOverlay: {
+        flex: 1,
+        backgroundColor: 'transparent',
         paddingHorizontal: 20,
-        paddingBottom: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.1)',
+        paddingTop: 60,
+        paddingBottom: 40,
+        justifyContent: 'space-between',
     },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: 'white',
+    closeBtn: {
+        alignSelf: 'flex-start',
     },
-    postButton: {
-        color: Theme.colors.primary,
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    content: {
-        padding: 20,
-    },
-    uploadBox: {
-        height: 250,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderStyle: 'dashed',
-        marginBottom: 20,
-    },
-    uploadText: {
-        color: Theme.colors.textMuted,
-        marginTop: 10,
-    },
-    previewContainer: {
-        height: 400,
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 20,
-        backgroundColor: '#000',
-    },
-    videoPreview: {
-        width: '100%',
-        height: '100%',
-    },
-    changeButton: {
+    flipBtn: {
         position: 'absolute',
-        bottom: 10,
-        right: 10,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
+        top: 60,
+        right: 20,
+        alignItems: 'center',
     },
-    changeText: {
+    flipText: {
         color: 'white',
         fontSize: 12,
+        marginTop: 4,
+        fontWeight: '600',
     },
-    inputContainer: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-        padding: 16,
+    controls: {
+        alignItems: 'center',
+    },
+    recordBtn: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        borderWidth: 6,
+        borderColor: 'rgba(255,255,255,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    recordingActive: {
+        borderColor: 'rgba(255, 59, 48, 0.4)',
+    },
+    recordInner: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: 'white',
+    },
+    recordInnerActive: {
+        backgroundColor: '#FF3B30',
+        borderRadius: 8,
+        width: 30,
+        height: 30,
+    },
+    recordText: {
+        color: 'white',
+        fontSize: 14,
+        fontWeight: '600',
+        textShadowColor: 'black',
+        textShadowRadius: 4,
+    },
+    videoPreview: {
+        width: screenWidth,
+        height: screenHeight,
+    },
+    previewOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '40%',
+        padding: 24,
+        justifyContent: 'flex-end',
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 20,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    inputSection: {
+        gap: 16,
     },
     input: {
         color: 'white',
         fontSize: 16,
-        height: 80,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 12,
+        padding: 16,
+        height: 100,
         textAlignVertical: 'top',
+    },
+    finalPostBtn: {
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: Theme.gradients.primary[0],
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 8,
+    },
+    finalPostText: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    disabledBtn: {
+        opacity: 0.6,
+    },
+    permissionBtn: {
+        backgroundColor: Theme.colors.primary,
+        padding: 16,
+        borderRadius: 12,
+        alignSelf: 'center',
+        marginTop: 20,
     }
 });
