@@ -84,6 +84,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
   const [inventory, setInventory] = React.useState<any[]>([]);
 
+  const [questCount, setQuestCount] = React.useState(0);
+
   React.useEffect(() => {
     const fetchBalanceAndStats = async () => {
       if (!wallet?.address) return;
@@ -107,10 +109,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           .eq('player_wallet', wallet.address.toLowerCase());
         setQuestCount(count || 0);
 
-        // Fetch Inventory (Coupons) -> Note: Joining manually or assuming we fetch claims and then coupon details
-        // Ideally we used a view, but let's just fetch claims and then their coupons.
-        // Or if we can join: .select(`*, merchant_coupons(*)`)
-        // NOTE: Supabase join syntax:
+        // Fetch Inventory (Coupons)
         const { data: claims } = await supabase
           .from('merchant_coupon_claims')
           .select(`
@@ -136,58 +135,6 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
   // ... (Rest of component)
 
-  {/* Global Stats */ }
-  <View style={styles.statsRow}>
-    <View style={styles.miniStat}>
-      <Text style={styles.miniStatValue}>{questCount}</Text>
-      <Text style={styles.miniStatLabel}>Quests</Text>
-    </View>
-    <View style={[styles.miniStat, styles.miniStatCenter]}>
-      <Text style={styles.miniStatValue}>{mantleBalance ? parseFloat(mantleBalance).toFixed(2) : "0.00"}</Text>
-      <Text style={styles.miniStatLabel}>MNT</Text>
-    </View>
-    <View style={styles.miniStat}>
-      <Text style={styles.miniStatValue}>{inventory.length}</Text>
-      <Text style={styles.miniStatLabel}>Items</Text>
-    </View>
-  </View>
-
-  {/* Inventory Section */ }
-  <View style={styles.section}>
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Theme.spacing.md }}>
-      <Text style={styles.sectionTitle}>My Inventory</Text>
-      <TouchableOpacity onPress={() => Alert.alert("Inventory", "Items you have purchased from the Shop.")}>
-        <Text style={{ color: Theme.colors.primary }}>See All</Text>
-      </TouchableOpacity>
-    </View>
-
-    {inventory.length === 0 ? (
-      <View style={styles.emptyInventory}>
-        <Text style={styles.emptyText}>No items yet. Visit the Shop!</Text>
-      </View>
-    ) : (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.inventoryScroll}>
-        {inventory.map((item: any, index) => (
-          <View key={index} style={styles.inventoryCard}>
-            <Image
-              source={{ uri: item.coupon?.image_url || 'https://via.placeholder.com/100' }}
-              style={styles.inventoryImage}
-            />
-            <View style={styles.inventoryInfo}>
-              <Text style={styles.inventoryTitle} numberOfLines={1}>{item.coupon?.title || 'Unknown Item'}</Text>
-              <Text style={styles.inventoryMerchant}>{item.coupon?.merchant_name}</Text>
-              <View style={styles.redeemBadge}>
-                <Text style={styles.redeemText}>{item.is_redeemed ? 'REDEEMED' : 'READY TO USE'}</Text>
-              </View>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-    )}
-  </View>
-
-
-  const [questCount, setQuestCount] = React.useState(0);
 
   const copyToClipboard = (text: string) => {
     // Note: Would need expo-clipboard for actual copying
@@ -289,7 +236,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Text style={styles.walletTypeLabel}>{walletType}</Text>
                       <View style={styles.networkBadge}>
-                        <Text style={styles.networkText}>Network: {networkName}</Text>
+                        <Text style={styles.networkText}>Network: Mantle Sepolia</Text>
                       </View>
                     </View>
                     <Text style={styles.walletAddressText} numberOfLines={1}>
@@ -299,26 +246,6 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                       Balance: {mantleBalance ? `${parseFloat(mantleBalance).toFixed(4)} MNT` : 'Loading...'}
                     </Text>
                   </View>
-                </View>
-                <View style={[styles.cardFooter, { borderTopWidth: 0, paddingTop: 0 }]}>
-                  <TouchableOpacity
-                    style={styles.switchMantleButton}
-                    onPress={async () => {
-                      if (wallets.length > 0) {
-                        const provider = await wallets[0].getProvider();
-                        switchChain(provider, '0x138b', 'Sepolia testnet'); // 5003 is 0x138b
-                      } else {
-                        Alert.alert('Error', 'No embedded wallet found');
-                      }
-                    }}
-                  >
-                    <LinearGradient
-                      colors={Theme.gradients.primary as any}
-                      style={styles.switchMantleGradient}
-                    >
-                      <Text style={styles.switchMantleText}>Switch to Mantle</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
                 </View>
                 <View style={styles.cardFooter}>
                   <View style={styles.activeIndicator}>
@@ -331,37 +258,6 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             </TouchableOpacity>
           </View>
         )}
-
-        {/* Network Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Network Selection</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.networkScroll}>
-            {[
-              { ...mantleSepoliaTestnet, icon: '🔥' },
-              { ...base, icon: '🔵' },
-              { ...polygon, icon: '🟣' },
-              { ...arbitrum, icon: '🛡️' },
-              { ...optimism, icon: '🔴' },
-              { ...mainnet, icon: '💎' },
-            ].map((chain) => (
-              <TouchableOpacity
-                key={chain.id}
-                style={styles.networkCard}
-                onPress={async () => {
-                  if (wallets.length > 0) {
-                    const provider = await wallets[0].getProvider();
-                    switchChain(provider, `0x${chain.id.toString(16)}`, chain.name);
-                  } else {
-                    Alert.alert('Error', 'No embedded wallet found');
-                  }
-                }}
-              >
-                <Text style={styles.networkIcon}>{chain.icon}</Text>
-                <Text style={styles.networkName}>{chain.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
 
         {/* Account Settings */}
         <View style={styles.section}>
@@ -435,7 +331,7 @@ const styles = StyleSheet.create({
   },
   avatarInner: {
     flex: 1,
-    backgroundColor: Theme.colors.card,
+    backgroundColor: Theme.colors.surface,
     borderRadius: 57,
     justifyContent: 'center',
     alignItems: 'center',
@@ -502,11 +398,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: Theme.spacing.lg,
-    backgroundColor: Theme.colors.card,
+    backgroundColor: Theme.colors.surface,
     marginHorizontal: Theme.spacing.lg,
     borderRadius: Theme.borderRadius.lg,
     marginBottom: Theme.spacing.xl,
-    ...Theme.shadows.medium,
+    ...Theme.shadows.glow,
   },
   miniStat: {
     alignItems: 'center',
@@ -615,7 +511,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Theme.spacing.lg,
   },
   networkCard: {
-    backgroundColor: Theme.colors.card,
+    backgroundColor: Theme.colors.surface,
     padding: Theme.spacing.md,
     borderRadius: Theme.borderRadius.md,
     marginRight: Theme.spacing.md,
@@ -639,7 +535,7 @@ const styles = StyleSheet.create({
   modernSettingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Theme.colors.card,
+    backgroundColor: Theme.colors.surface,
     padding: Theme.spacing.md,
     borderRadius: Theme.borderRadius.md,
     borderWidth: 1,
@@ -733,7 +629,7 @@ const styles = StyleSheet.create({
   // Inventory Styles
   emptyInventory: {
     padding: 32,
-    backgroundColor: Theme.colors.card,
+    backgroundColor: Theme.colors.surface,
     borderRadius: Theme.borderRadius.md,
     alignItems: 'center',
     borderWidth: 1,
@@ -750,7 +646,7 @@ const styles = StyleSheet.create({
   },
   inventoryCard: {
     width: 140,
-    backgroundColor: Theme.colors.card,
+    backgroundColor: Theme.colors.surface,
     borderRadius: Theme.borderRadius.md,
     marginRight: Theme.spacing.md,
     borderWidth: 1,
